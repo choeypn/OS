@@ -1,0 +1,120 @@
+Script started on 2020-02-02 18:06:55-0800
+choeypn@cf405-13:~/CS447/csci447_w20/homework1$ make
+asm Echo.s
+lddd Echo.o -o Echo
+asm Hello.s
+lddd Hello.o -o Hello
+asm Runtime.s
+kpl System -unsafe
+asm System.s
+kpl HelloWorld
+asm HelloWorld.s
+lddd Runtime.o System.o HelloWorld.o -o HelloWorld
+kpl aFunProgram
+asm aFunProgram.s
+lddd Runtime.o System.o aFunProgram.o -o aFunProgram
+choeypn@cf405-13:~/CS447/csci447_w20/homework1$ blitz aFunProgram -g
+Beginning execution...
+====================  KPL PROGRAM STARTING  ====================
+a
+a
+q
+
+====================  KPL PROGRAM TERMINATION  ====================
+
+****  A 'debug' instruction was encountered  *****
+Done!  The next instruction to execute will be:
+000D98: C0100000       sethi   0x0000,r1	! 0x00000DA8 = 3496 (noGoMessage)
+
+Entering machine-level debugger...
+======================================================
+=====                                            =====
+=====         The BLITZ Machine Emulator         =====
+=====                                            =====
+=====  Copyright 2001-2007, Harry H. Porter III  =====
+=====                                            =====
+======================================================
+
+Enter a command at the prompt.  Type 'quit' to exit or 'help' for
+info about commands.
+> q
+Number of Disk Reads    = 0
+Number of Disk Writes   = 0
+Instructions Executed   = 59979185
+Time Spent Sleeping     = 0
+    Total Elapsed Time  = 59979185
+choeypn@cf405-13:~/CS447/csci447_w20/homework1$ blitz aFunProgram -g
+Beginning execution...
+====================  KPL PROGRAM STARTING  ====================
+q
+
+====================  KPL PROGRAM TERMINATION  ====================
+
+****  A 'debug' instruction was encountered  *****
+Done!  The next instruction to execute will be:
+000D98: C0100000       sethi   0x0000,r1	! 0x00000DA8 = 3496 (noGoMessage)
+
+Entering machine-level debugger...
+======================================================
+=====                                            =====
+=====         The BLITZ Machine Emulator         =====
+=====                                            =====
+=====  Copyright 2001-2007, Harry H. Porter III  =====
+=====                                            =====
+======================================================
+
+Enter a command at the prompt.  Type 'quit' to exit or 'help' for
+info about commands.
+> q
+Number of Disk Reads    = 0
+Number of Disk Writes   = 0
+Instructions Executed   = 74673466
+Time Spent Sleeping     = 0
+    Total Elapsed Time  = 74673466
+choeypn@cf405-13:~/CS447/csci447_w20/homework1$ blitz aFunProgram -g
+Beginning execution...
+====================  KPL PROGRAM STARTING  ====================
+ababab
+ababab
+aaaaaa
+aaaaaa
+aaaaaaqaaa
+aaaaaaqaaa
+aqaa
+aqaa
+aaaq
+aaaq
+qaa
+
+====================  KPL PROGRAM TERMINATION  ====================
+
+****  A 'debug' instruction was encountered  *****
+Done!  The next instruction to execute will be:
+000D98: C0100000       sethi   0x0000,r1	! 0x00000DA8 = 3496 (noGoMessage)
+
+Entering machine-level debugger...
+======================================================
+=====                                            =====
+=====         The BLITZ Machine Emulator         =====
+=====                                            =====
+=====  Copyright 2001-2007, Harry H. Porter III  =====
+=====                                            =====
+======================================================
+
+Enter a command at the prompt.  Type 'quit' to exit or 'help' for
+info about commands.
+> q
+Number of Disk Reads    = 0
+Number of Disk Writes   = 0
+Instructions Executed   = 195113962
+Time Spent Sleeping     = 0
+    Total Elapsed Time  = 195113962
+choeypn@cf405-13:~/CS447/csci447_w20/homework1$ make clean
+rm -f Echo.o Echo
+rm -f Hello.o Hello
+rm -f Runtime.o System.s System.o HelloWorld.o HelloWorld.s HelloWorld
+rm -f aFunProgram.o aFunProgram.s aFunProgram
+choeypn@cf405-13:~/CS447/csci447_w20/homework1$ exit
+exit
+
+Script done on 2020-02-02 18:07:46-0800
