@@ -1,0 +1,126 @@
+Script started on 2020-02-15 17:38:05-0800
+choeypn@cf405-05:~/CS447/csci447_w20/homework2/HW2Files$ make
+kpl System -unsafe
+asm System.s
+kpl List -unsafe
+asm List.s
+kpl Thread -unsafe
+asm Thread.s
+asm Switch.s
+kpl Synch
+asm Synch.s
+kpl Main -unsafe
+asm Main.s
+asm Runtime.s
+lddd System.o List.o Thread.o Switch.o Synch.o Main.o Runtime.o -o os
+kpl Game -unsafe
+asm Game.s
+lddd System.o List.o Thread.o Switch.o Synch.o Runtime.o Game.o -o game
+choeypn@cf405-05:~/CS447/csci447_w20/homework2/HW2Files$ blitz -g os
+Beginning execution...
+====================  KPL PROGRAM STARTING  ====================
+Example Thread-based Programs...
+Initializing Thread Scheduler...
+        Producer-B             B
+B       Producer-B             B
+BB      Producer-B             B
+BBB     Producer-C                 C
+BBBC    Consumer-1                               |      B
+BBC     Consumer-1                               |      B
+BC      Producer-B             B
+BCB     Producer-B             B
+BCBB    Producer-C                 C
+BCBBC   Consumer-1                               |      B
+CBBC    Consumer-1                               |      C
+BBC     Consumer-1                               |      B
+BC      Producer-D                     D
+BCD     Consumer-1                               |      B
+CD      Producer-D                     D
+CDD     Producer-D                     D
+CDDD    Consumer-1                               |      C
+DDD     Consumer-1                               |      D
+DD      Consumer-1                               |      D
+D       Producer-E                         E
+DE      Producer-E                         E
+DEE     Producer-E                         E
+DEEE    Consumer-1                               |      D
+EEE     Consumer-1                               |      E
+EE      Consumer-1                               |      E
+E       Producer-A         A
+EA      Consumer-1                               |      E
+A       Producer-A         A
+AA      Consumer-1                               |      A
+A       Producer-A         A
+AA      Consumer-1                               |      A
+A       Consumer-1                               |      A
+        Producer-A         A
+A       Producer-A         A
+AA      Consumer-2                               |          A
+A       Consumer-2                               |          A
+     
+*****  A 'wait' instruction was executed and no more interrupts are scheduled... halting emulation!  *****
+
+Done!  The next instruction to execute will be:
+000EC8: 09000000       ret     
+Number of Disk Reads    = 0
+Number of Disk Writes   = 0
+Instructions Executed   = 131056
+Time Spent Sleeping     = 0
+    Total Elapsed Time  = 131056
+choeypn@cf405-05:~/CS447/csci447_w20/homework2/HW2Files$ blitz -g os
+Beginning execution...
+====================  KPL PROGRAM STARTING  ====================
+Example Thread-based Programs...
+Initializing Thread Scheduler...
+        Producer-B             B
+B       Producer-B             B
+BB      Producer-B             B
+BBB     Producer-C                 C
+BBBC    Consumer-1                               |      B
+BBC     Consumer-1                               |      B
+BC      Producer-B             B
+BCB     Producer-B             B
+BCBB    Producer-C                 C
+BCBBC   Consumer-1                               |      B
+CBBC    Consumer-1                               |      C
+BBC     Consumer-1                               |      B
+BC      Producer-D                     D
+BCD     Consumer-1                               |      B
+CD      Producer-D                     D
+CDD     Producer-D                     D
+CDDD    Consumer-1                               |      C
+DDD     Consumer-1                               |      D
+DD      Consumer-1                               |      D
+D       Producer-E                         E
+DE      Producer-E                         E
+DEE     Producer-E                         E
+DEEE    Consumer-1                               |      D
+EEE     Consumer-1                               |      E
+EE      Consumer-1                               |      E
+E       Producer-A         A
+EA      Consumer-1                               |      E
+A       Producer-A         A
+AA      Consumer-1                               |      A
+A       Producer-A         A
+AA      Consumer-1                               |      A
+A       Consumer-1                               |      A
+        Producer-A         A
+A       Producer-A         A
+AA      Consumer-2                               |          A
+A       Consumer-2                               |          A
+     
+*****  A 'wait' instruction was executed and no more interrupts are scheduled... halting emulation!  *****
+
+Done!  The next instruction to execute will be:
+000EC8: 09000000       ret     
+Number of Disk Reads    = 0
+Number of Disk Writes   = 0
+Instructions Executed   = 131056
+Time Spent Sleeping     = 0
+    Total Elapsed Time  = 131056
+choeypn@cf405-05:~/CS447/csci447_w20/homework2/HW2Files$ make clean
+rm -f *.o *~ List.s Main.s Synch.s System.s Thread.s Barber.s Game.s os game barber
+choeypn@cf405-05:~/CS447/csci447_w20/homework2/HW2Files$ exit
+exit
+
+Script done on 2020-02-15 17:38:30-0800

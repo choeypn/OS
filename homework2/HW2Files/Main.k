@@ -405,7 +405,7 @@ code Main
         -- var i and j have been declared and will be used for printing.
 
 	       lock.Lock()
-         if bufferLength == BUFFER_SIZE -1
+         if bufferLength == BUFFER_SIZE-1
             not_full.Wait(&lock)
          endIf
 
@@ -436,7 +436,7 @@ code Main
     method removeItem ()
         var
             c: char
-            i, j: int
+            i, j, k: int
         -- var c should store the removed item, it will be used for printing it.
         -- var i and j will be used for printing.
 
@@ -448,10 +448,11 @@ code Main
           not_empty.Wait(&lock)
         endIf
         c = buffer[0]
+        for(k = 0; k < BUFFER_SIZE-1; k = k+1)
+          buffer[k] = buffer[k+1]
+        endFor
+        buffer[BUFFER_SIZE-1] = '\0'
         bufferLength = bufferLength -1
-        if bufferLength == BUFFER_SIZE -2
-          not_full.Signal(&lock)
-        endIf
         -----------Print the thread name, which tells what we are doing.----
             print ("   ")
             print (currentThread.name)  -- Will include right number of spaces after name
@@ -468,6 +469,9 @@ code Main
             printChar (' ')
             endFor
         ---------------- Printing Done ------------------------------------
+        if bufferLength == BUFFER_SIZE -2
+          not_full.Signal(&lock)
+        endIf
         -- ..unlock code goes here
         lock.Unlock()
 	 endMethod
