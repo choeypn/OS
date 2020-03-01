@@ -11,7 +11,7 @@ CC=gcc
 
 CFLAGS=-g -Wall
 
-FILES=Simulation-1.c
+FILES=Simulation.c
 
 DERIV=${FILES:.c=.o}
 
