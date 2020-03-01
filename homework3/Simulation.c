@@ -10,16 +10,16 @@
 #include <stdbool.h>
 #include <limits.h>
 
-//A structure representing a simplified Process Control Block. It includes 
+//A structure representing a simplified Process Control Block. It includes
 typedef struct PCB
 {
   int name;
   int timeLeft;
   int waitTime;
-  int execTime;
-  int quantumAExceededCount;    
+  int burstTime;
+  int quantumAExceededCount;
   // an integer indicating the number of times a process has exceeded its quantum A. Used to decide whether it should be demoted or not.
-  bool demoted;                 
+  bool demoted;
   // bool to indicate whetehr a process has been demoted or not. This is checked to decide where it should be requeued.
   struct PCB* nextProcess;
 } PCB;
@@ -49,7 +49,7 @@ int pNum = 1;
 
 
 // Adds a PCB to the tail of QueueA
-void addToAQueue(PCB* toAdd) 
+void addToAQueue(PCB* toAdd)
 {
   if(QueueAHead == NULL){
     QueueAHead = toAdd;
@@ -64,7 +64,7 @@ void addToAQueue(PCB* toAdd)
 }
 
 // Adds a PCB to the tail of QueueB.
-void addToBQueue(PCB* toAdd) 
+void addToBQueue(PCB* toAdd)
 {
   if(QueueBHead == NULL){
     QueueBHead = toAdd;
@@ -79,9 +79,9 @@ void addToBQueue(PCB* toAdd)
 }
 
 
-// a function that removes a process from QueueA. If QueueA is empty, 
+// a function that removes a process from QueueA. If QueueA is empty,
 // it retrieves a process from QueueB or null if QueueB is empty as well.
-PCB* removeFromQueueAFirst() 
+PCB* removeFromQueueAFirst()
 {
   PCB *output = NULL;
   if(QueueAHead == NULL)
@@ -93,9 +93,9 @@ PCB* removeFromQueueAFirst()
   return output;
 }
 
-// a function that removes a process from QueueB. If QueueB is empty, 
+// a function that removes a process from QueueB. If QueueB is empty,
 // it retrieves a process from QueueA or null if QueueA is empty as well.
-PCB* removeFromQueueBFirst() 
+PCB* removeFromQueueBFirst()
 {
   PCB *output = NULL;
   if(QueueBHead == NULL)
@@ -109,13 +109,13 @@ PCB* removeFromQueueBFirst()
 
 
 // Retrieves a process statistics and terminates it by freeing its memory
-void terminateProcess() 
+void terminateProcess()
 {
   free(currentCPUProcess);
 }
 
 // prints final result for current run.
-void printFinalStatistics() 
+void printFinalStatistics()
 {
 // to be implemented
 }
@@ -132,6 +132,7 @@ bool queueJobFromFile(FILE *file)
       p->name = pNum;
       p->timeLeft = atoi(line);
       p->waitTime = 0;
+      p->burstTime = 0;
       p->quantumAExceededCount = 0;
       p->demoted = false;
       p->nextProcess = NULL;
@@ -144,7 +145,7 @@ bool queueJobFromFile(FILE *file)
   return eof;
 }
 
-// Retrieves a process from QueueA or QueueB depending on the dispatch ratio and 
+// Retrieves a process from QueueA or QueueB depending on the dispatch ratio and
 //current dispatch count. Returns a pointer to the PCB curretnly occupying the CPU
 PCB* dispatchProcessFromQueues()
 {
@@ -154,7 +155,7 @@ PCB* dispatchProcessFromQueues()
     dispatchACount = 0;
   }else{
     process = removeFromQueueAFirst();
-    dispatchACount++; 
+    dispatchACount++;
   }
   return process;
 }
@@ -163,12 +164,26 @@ PCB* dispatchProcessFromQueues()
 // the updated variables can be global or specific for each PCB
 void updateAllTimes ()
 {
- 
+
 }
 
 bool checkQuantum(){
-  
-  return false;
+  bool state = false;
+  bool check = false;
+  if(currentCPUProcess->quantumAExceededCount < demotionThreshold)
+    check = true;
+  if(check){
+    if(currentCPUProcess->burstTime == quantumA){
+      state = true;
+      currentCPUProcess->burstTime = 0;
+    }
+  }else{
+    if(currentCPUProcess->burstTime == quantumB){
+      state = true;
+      currentCPUProcess->burstTime = 0;
+    }
+  }
+  return state;
 }
 
 // At the start of an execution cycle, this fucntion is called to decide whether
@@ -187,7 +202,7 @@ void continueOrExitAndDispatch()
 
 // when this function is called, the current function occupying the CPU will exit
 // and would either terminate if its execution time is done or get requeued (with possible demotion)
-void exitCPU() 
+void exitCPU()
 {
   if(currentCPUProcess->timeLeft == 0)
     terminateProcess();
@@ -214,11 +229,11 @@ void updateDemotionCountAndFlag()
 
  // During each 'tick' calls should follow this order
  // continueOrExitAndDispatch > dispatchProcessFromQueues (called inside continueOrExitAndDispatch() if needed) > queueJobFromFile > updateAllTimes
- // Other functions or code could and should be used between or inside 
+ // Other functions or code could and should be used between or inside
  // these calls.
 void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
   printf("Demotion threshold value received : %d\n", demotionThreshold);
-  printf("Dispatch ratio value received : %d\n", dispatchRatio); 
+  printf("Dispatch ratio value received : %d\n", dispatchRatio);
   FILE *f;
   f = fopen(filename,"r");
   bool processFile = true;
@@ -231,7 +246,7 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
   puts("read queue from file done");
 }
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
   // parse inputs (from Lab 3)
   if(argc != 4){
