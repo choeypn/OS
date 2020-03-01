@@ -16,6 +16,7 @@ typedef struct PCB
   int name;
   int timeLeft;
   int waitTime;
+  int execTime;
   int quantumAExceededCount;    
   // an integer indicating the number of times a process has exceeded its quantum A. Used to decide whether it should be demoted or not.
   bool demoted;                 
@@ -35,7 +36,7 @@ PCB* QueueBTail;
 int quantumA = 5;
 int quantumB = 40;
 int dispatchRatio;
-int dispatchACount;            // current dispatch count from Queue A
+int dispatchACount = 0;            // current dispatch count from Queue A
 int demotionThreshold;
 int processesCompleted = 0;
 int acceptedJobs = 0;
@@ -140,7 +141,15 @@ bool queueJobFromFile(FILE *file)
 //current dispatch count. Returns a pointer to the PCB curretnly occupying the CPU
 PCB* dispatchProcessFromQueues()
 {
-  // to be implemented
+  PCB* process;
+  if(dispatchACount == dispatchRatio){
+    process = removeFromQueueBFirst();
+    dispatchACount = 0;
+  }else{
+    process = removeFromQueueAFirst();
+    dispatchACount++; 
+  }
+  return process;
 }
 
 // perform a "tick" by updating wait times, execution time, process time left ...
@@ -150,24 +159,39 @@ void updateAllTimes ()
   // to be implemented
 }
 
+bool checkQuantum(){
+  
+  return false;
+}
+
 // At the start of an execution cycle, this fucntion is called to decide whether
 // current process will keep using the CPU for next cycle or it will exit and a
 // process will be dispatched. The process would exit if it finishes it execution
 // time or when the current quantum expires.
 void continueOrExitAndDispatch()
 {
-  if(currentCPUProcess->quantumAExceededCount == quantumA || currentCPUProcess->timeLeft == 0){
+  if(currentCPUProcess == NULL)
+    currentCPUProcess = dispatchProcessFromQueues();
+  else if(checkQuantum() || currentCPUProcess->timeLeft == 0){
     exitCPU();
-    dispatchProcessFromQueues();
+    currentCPUProcess = dispatchProcessFromQueues();
   }
-    
 }
 
 // when this function is called, the current function occupying the CPU will exit
 // and would either terminate if its execution time is done or get requeued (with possible demotion)
 void exitCPU() 
 {
-  //to be implemented
+  if(currentCPUProcess->timeLeft == 0)
+    terminateProcess();
+  else{
+    if(currentCPUProcess->demoted)
+      addToBQueue(currentCPUProcess);
+    else{
+      updateDemotionCountAndFlag();
+      addToAQueue(currentCPUProcess);
+    }
+  }
 }
 
 
@@ -175,18 +199,25 @@ void exitCPU()
 // that are already demoted do not need to be checked/updated as demotuion is irreversable.
 void updateDemotionCountAndFlag()
 {
-  //to be implemented
+  currentCPUProcess->quantumAExceededCount++;
+  if(currentCPUProcess->quantumAExceededCount == demotionThreshold-1)
+    currentCPUProcess->demoted = true;
 }
 
+
+ // During each 'tick' calls should follow this order
+ // continueOrExitAndDispatch > dispatchProcessFromQueues (called inside continueOrExitAndDispatch() if needed) > queueJobFromFile > updateAllTimes
+ // Other functions or code could and should be used between or inside 
+ // these calls.
 void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
-  // A function whose input is the demotion counter for a queue A and the
-  // dispatch ratio between the two queueus
-  printf("Input file name : %s\n", filename);
   printf("Demotion threshold value received : %d\n", demotionThreshold);
   printf("Dispatch ratio value received : %d\n", dispatchRatio); 
   FILE *f;
   f = fopen(filename,"r");
-  while(queueJobFromFile(f)){}
+  while(queueJobFromFile(f)){
+    //updateAllTimes();
+    //continueOrExitAndDispatch();
+  }
   fclose(f);
   puts("read queue from file done");
 }
@@ -203,8 +234,4 @@ int main(int argc, char** argv)
   dispatchRatio = atoi(argv[3]);
   Simulate(filename,demotionThreshold,dispatchRatio);   //run simulation
   exit(0);
- // During each 'tick' calls should follow this order
- // continueOrExitAndDispatch > dispatchProcessFromQueues (called inside continueOrExitAndDispatch() if needed) > queueJobFromFile > updateAllTimes
- // Other functions or code could and should be used between or inside 
- // these calls.
 }

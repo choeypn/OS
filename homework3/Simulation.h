@@ -16,6 +16,8 @@ PCB* dispatchProcessFromQueues();
 
 void updateAllTimes();
 
+bool checkQuantum();
+
 void continueOrExitAndDispatch();
 void exitCPU();
 void updateDemotionCountAndFlag();
