@@ -13,6 +13,7 @@
 //A structure representing a simplified Process Control Block. It includes 
 typedef struct PCB
 {
+  int name;
   int timeLeft;
   int waitTime;
   int quantumAExceededCount;    
@@ -41,19 +42,32 @@ int idleTime = 0;             // the time the CPU spent as idle (no current proc
 int totalWaitTime = 0;
 int maxWaitTime = 0;
 int minWaitTime = INT_MAX;
-
+int pNum = 1;
 
 
 // Adds a PCB to the tail of QueueA
 void addToAQueue(PCB* toAdd) 
 {
-// to be implemented
+  if(QueueAHead == NULL){
+    QueueAHead = toAdd;
+  }
+  else{
+    QueueATail = QueueAHead;
+    while(QueueATail != NULL)
+      QueueATail = QueueATail->nextProcess;
+  }
+  QueueATail = toAdd;
 }
 
 // Adds a PCB to the tail of QueueB.
 void addToBQueue(PCB* toAdd) 
 {
-// to be implemented
+  if(QueueBTail == NULL)
+    QueueBTail = toAdd;
+  else{
+    QueueBTail->nextProcess = toAdd;
+    QueueBTail = toAdd;
+  }
 }
 
 
@@ -86,9 +100,26 @@ void printFinalStatistics()
 
 // reads next job from the job file and added to the tail queueA.
 // returns false if EOF is reached and true otherwise
-bool queueJobFromFile()
+bool queueJobFromFile(FILE *file)
 {
-  // to be implemented
+  bool eof = false;
+  char line[10];
+  if(fgets(line,sizeof(line),file) != NULL){
+    if(line[0] != 'i'){   //check if new process is coming in
+      PCB p;
+      p.name = pNum;
+      p.timeLeft = atoi(line);
+      p.waitTime = 0;
+      p.quantumAExceededCount = 0;
+      p.demoted = false;
+      p.nextProcess = NULL;
+      printf("process number: %d timeleft: %d \n",p.name,p.timeLeft);
+      addToAQueue(&p);
+      pNum++;
+    }
+    eof = true;
+  }
+  return eof;
 }
 
 // Retrieves a process from QueueA or QueueB depending on the dispatch ratio and 
@@ -135,6 +166,11 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
   printf("Input file name : %s\n", filename);
   printf("Demotion threshold value received : %d\n", demotionThreshold);
   printf("Dispatch ratio value received : %d\n", dispatchRatio); 
+  FILE *f;
+  f = fopen(filename,"r");
+  while(queueJobFromFile(f)){}
+  fclose(f);
+  puts("read queue from file done");
 }
 
 int main(int argc, char** argv) 
@@ -147,11 +183,10 @@ int main(int argc, char** argv)
   char *filename = argv[1];
   demotionThreshold = atoi(argv[2]);
   dispatchRatio = atoi(argv[3]);
- // Run simulation
-  Simulate(filename,demotionThreshold,dispatchRatio);
+  Simulate(filename,demotionThreshold,dispatchRatio);   //run simulation
   exit(0);
  // During each 'tick' calls should follow this order
- // contintueOrExitAndDispatch > dispatchProcessFromQueues (called inside continueOrExitAndDispatch() if needed) > queueJobFromFile > updateAllTimes
+ // continueOrExitAndDispatch > dispatchProcessFromQueues (called inside continueOrExitAndDispatch() if needed) > queueJobFromFile > updateAllTimes
  // Other functions or code could and should be used between or inside 
  // these calls.
 }
