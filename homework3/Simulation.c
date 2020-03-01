@@ -51,37 +51,30 @@ int pNum = 1;
 // Adds a PCB to the tail of QueueA
 void addToAQueue(PCB* toAdd) 
 {
-  if(QueueAHead == NULL)
-    QueueAHead = toAdd;
-  else{
-  PCB *pointer = QueueAHead;
-  while(pointer->nextProcess != NULL)
-    pointer = pointer->nextProcess;
-  QueueATail = toAdd;
-  pointer->nextProcess = QueueATail;
-  }
-/*
   if(QueueAHead == NULL){
     QueueAHead = toAdd;
+    QueueATail = toAdd;
+  }else{
+    PCB *pointer = QueueAHead;
+    while(pointer->nextProcess != NULL)
+      pointer = pointer->nextProcess;
+    pointer->nextProcess = toAdd;
+    QueueATail = pointer->nextProcess;
   }
-  else{
-    QueueATail = QueueAHead;
-    while(QueueATail->nextProcess != NULL)
-      QueueATail = QueueATail->nextProcess;
-    QueueATail->nextProcess = toAdd;
-  }
-  QueueATail = toAdd;
-*/
 }
 
 // Adds a PCB to the tail of QueueB.
 void addToBQueue(PCB* toAdd) 
 {
-  if(QueueBTail == NULL)
+  if(QueueBHead == NULL){
+    QueueBHead = toAdd;
     QueueBTail = toAdd;
-  else{
-    QueueBTail->nextProcess = toAdd;
-    QueueBTail = toAdd;
+  }else{
+    PCB *pointer = QueueBHead;
+    while(pointer->nextProcess != NULL)
+      pointer = pointer->nextProcess;
+    pointer->nextProcess = toAdd;
+    QueueBTail = pointer->nextProcess;
   }
 }
 
@@ -90,21 +83,35 @@ void addToBQueue(PCB* toAdd)
 // it retrieves a process from QueueB or null if QueueB is empty as well.
 PCB* removeFromQueueAFirst() 
 {
-// to be implemented
+  PCB *output = NULL;
+  if(QueueAHead == NULL)
+    output = QueueBHead;
+  else{
+    output = QueueAHead;
+    QueueAHead = QueueAHead->nextProcess;
+  }
+  return output;
 }
 
 // a function that removes a process from QueueB. If QueueB is empty, 
 // it retrieves a process from QueueA or null if QueueA is empty as well.
 PCB* removeFromQueueBFirst() 
 {
-// to be implemented
+  PCB *output = NULL;
+  if(QueueBHead == NULL)
+    output = QueueAHead;
+  else{
+    output = QueueBHead;
+    QueueBHead = QueueBHead->nextProcess;
+  }
+  return output;
 }
 
 
 // Retrieves a process statistics and terminates it by freeing its memory
 void terminateProcess() 
 {
-// to be implemented
+  free(currentCPUProcess);
 }
 
 // prints final result for current run.
@@ -121,15 +128,15 @@ bool queueJobFromFile(FILE *file)
   char line[10];
   if(fgets(line,sizeof(line),file) != NULL){
     if(line[0] != 'i'){   //check if new process is coming in
-      PCB p;
-      p.name = pNum;
-      p.timeLeft = atoi(line);
-      p.waitTime = 0;
-      p.quantumAExceededCount = 0;
-      p.demoted = false;
-      p.nextProcess = NULL;
-      printf("process number: %d timeleft: %d \n",p.name,p.timeLeft);
-      addToAQueue(&p);
+      PCB *p = malloc(sizeof(PCB));
+      p->name = pNum;
+      p->timeLeft = atoi(line);
+      p->waitTime = 0;
+      p->quantumAExceededCount = 0;
+      p->demoted = false;
+      p->nextProcess = NULL;
+      printf("process number: %d timeleft: %d \n",p->name,p->timeLeft);
+      addToAQueue(p);
       pNum++;
     }
     eof = true;
@@ -156,7 +163,7 @@ PCB* dispatchProcessFromQueues()
 // the updated variables can be global or specific for each PCB
 void updateAllTimes ()
 {
-  // to be implemented
+ 
 }
 
 bool checkQuantum(){
@@ -214,9 +221,11 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
   printf("Dispatch ratio value received : %d\n", dispatchRatio); 
   FILE *f;
   f = fopen(filename,"r");
-  while(queueJobFromFile(f)){
+  bool processFile = true;
+  while(processFile){
+    continueOrExitAndDispatch();
+    processFile = queueJobFromFile(f);
     //updateAllTimes();
-    //continueOrExitAndDispatch();
   }
   fclose(f);
   puts("read queue from file done");
