@@ -85,8 +85,8 @@ PCB* removeFromQueueAFirst()
 {
   PCB *output = NULL;
   if(QueueAHead == NULL){
-    puts("WTF HOW YOU REACHED HERE");
-    output = QueueBHead;
+    if(QueueBHead != NULL)
+      output = QueueBHead;
   }
   else{
     puts("remove from Queue A Head");
@@ -101,8 +101,10 @@ PCB* removeFromQueueAFirst()
 PCB* removeFromQueueBFirst()
 {
   PCB *output = NULL;
-  if(QueueBHead == NULL)
-    output = QueueAHead;
+  if(QueueBHead == NULL){
+   if(QueueAHead != NULL)
+     output = QueueAHead;
+  }
   else{
     puts("remove from Queue B Head");
     output = QueueBHead;
@@ -158,10 +160,10 @@ PCB* dispatchProcessFromQueues()
   PCB* process;
   printf("dispatchedAcount: %d \n",dispatchACount);
   if(dispatchACount == dispatchRatio){
-    puts("YEET");
     process = removeFromQueueBFirst();
     dispatchACount = 0;
   }else{
+    puts("remove from Queue A first.");
     process = removeFromQueueAFirst();
     dispatchACount++;
   }
@@ -246,9 +248,10 @@ void exitCPU()
 // that are already demoted do not need to be checked/updated as demotuion is irreversable.
 void updateDemotionCountAndFlag()
 {
-  currentCPUProcess->quantumAExceededCount++;
-  if(currentCPUProcess->quantumAExceededCount == demotionThreshold-1)
+  if(currentCPUProcess->quantumAExceededCount == demotionThreshold)
     currentCPUProcess->demoted = true;
+  currentCPUProcess->quantumAExceededCount++;
+  printf("quantumAExceededCount: %d\n",currentCPUProcess->quantumAExceededCount); 
 }
 
 
