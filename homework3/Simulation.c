@@ -84,9 +84,11 @@ void addToBQueue(PCB* toAdd)
 PCB* removeFromQueueAFirst()
 {
   PCB *output = NULL;
-  if(QueueAHead == NULL)
+  if(QueueAHead == NULL){
     output = QueueBHead;
+  }
   else{
+    puts("YEET");
     output = QueueAHead;
     QueueAHead = QueueAHead->nextProcess;
   }
@@ -164,7 +166,13 @@ PCB* dispatchProcessFromQueues()
 // the updated variables can be global or specific for each PCB
 void updateAllTimes ()
 {
+  if(currentCPUProcess != NULL){
+    currentCPUProcess->timeLeft--;
+    currentCPUProcess->burstTime++;
 
+    printf("CPUProcess: %d timeLEft: %d burstTime: %d \n",\
+    currentCPUProcess->name,currentCPUProcess->timeLeft,currentCPUProcess->burstTime);
+  }
 }
 
 bool checkQuantum(){
@@ -174,6 +182,7 @@ bool checkQuantum(){
     check = true;
   if(check){
     if(currentCPUProcess->burstTime == quantumA){
+      puts("YEEY");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
@@ -197,6 +206,7 @@ void continueOrExitAndDispatch()
   else if(checkQuantum() || currentCPUProcess->timeLeft == 0){
     exitCPU();
     currentCPUProcess = dispatchProcessFromQueues();
+    printf("current process: %d\n",currentCPUProcess->name);
   }
 }
 
@@ -204,12 +214,15 @@ void continueOrExitAndDispatch()
 // and would either terminate if its execution time is done or get requeued (with possible demotion)
 void exitCPU()
 {
-  if(currentCPUProcess->timeLeft == 0)
+  if(currentCPUProcess->timeLeft == 0){
+    processesCompleted++;
     terminateProcess();
+  }
   else{
     if(currentCPUProcess->demoted)
       addToBQueue(currentCPUProcess);
     else{
+      puts("HERE");
       updateDemotionCountAndFlag();
       addToAQueue(currentCPUProcess);
     }
@@ -240,7 +253,7 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
   while(processFile){
     continueOrExitAndDispatch();
     processFile = queueJobFromFile(f);
-    //updateAllTimes();
+    updateAllTimes();
   }
   fclose(f);
   puts("read queue from file done");
