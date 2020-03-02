@@ -85,10 +85,11 @@ PCB* removeFromQueueAFirst()
 {
   PCB *output = NULL;
   if(QueueAHead == NULL){
+    puts("WTF HOW YOU REACHED HERE");
     output = QueueBHead;
   }
   else{
-    puts("YEET");
+    puts("remove from Queue A Head");
     output = QueueAHead;
     QueueAHead = QueueAHead->nextProcess;
   }
@@ -103,6 +104,7 @@ PCB* removeFromQueueBFirst()
   if(QueueBHead == NULL)
     output = QueueAHead;
   else{
+    puts("remove from Queue B Head");
     output = QueueBHead;
     QueueBHead = QueueBHead->nextProcess;
   }
@@ -113,7 +115,9 @@ PCB* removeFromQueueBFirst()
 // Retrieves a process statistics and terminates it by freeing its memory
 void terminateProcess()
 {
+  puts("process done. Terminate process");
   free(currentCPUProcess);
+  currentCPUProcess = NULL;
 }
 
 // prints final result for current run.
@@ -152,7 +156,9 @@ bool queueJobFromFile(FILE *file)
 PCB* dispatchProcessFromQueues()
 {
   PCB* process;
+  printf("dispatchedAcount: %d \n",dispatchACount);
   if(dispatchACount == dispatchRatio){
+    puts("YEET");
     process = removeFromQueueBFirst();
     dispatchACount = 0;
   }else{
@@ -166,7 +172,10 @@ PCB* dispatchProcessFromQueues()
 // the updated variables can be global or specific for each PCB
 void updateAllTimes ()
 {
-  if(currentCPUProcess != NULL){
+  if(currentCPUProcess == NULL){
+    idleTime++;
+    printf("no process in CPU. Idle time: %d \n",idleTime);
+  }else{
     currentCPUProcess->timeLeft--;
     currentCPUProcess->burstTime++;
 
@@ -182,12 +191,13 @@ bool checkQuantum(){
     check = true;
   if(check){
     if(currentCPUProcess->burstTime == quantumA){
-      puts("YEEY");
+      puts("burst time quantum A reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
   }else{
     if(currentCPUProcess->burstTime == quantumB){
+      puts("burst time quantum B reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
@@ -205,8 +215,8 @@ void continueOrExitAndDispatch()
     currentCPUProcess = dispatchProcessFromQueues();
   else if(checkQuantum() || currentCPUProcess->timeLeft == 0){
     exitCPU();
-    currentCPUProcess = dispatchProcessFromQueues();
-    printf("current process: %d\n",currentCPUProcess->name);
+    //currentCPUProcess = dispatchProcessFromQueues();
+    //printf("current process added to CPU: %d\n",currentCPUProcess->name);
   }
 }
 
@@ -219,10 +229,12 @@ void exitCPU()
     terminateProcess();
   }
   else{
-    if(currentCPUProcess->demoted)
+    if(currentCPUProcess->demoted){
+      puts("process exiting CPU, add back to queue B");
       addToBQueue(currentCPUProcess);
+    }
     else{
-      puts("HERE");
+      puts("process exiting CPU, add back to queue A");
       updateDemotionCountAndFlag();
       addToAQueue(currentCPUProcess);
     }
