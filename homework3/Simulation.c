@@ -91,12 +91,11 @@ PCB* removeFromQueueAFirst()
     }
   }
   else{
-    puts("remove from Queue A Head");
+    //puts("remove from Queue A Head");
     output = QueueAHead;
     QueueAHead = QueueAHead->nextProcess;
-    if(QueueAHead==NULL)
-      puts("YEET");
-  }
+    dispatchACount++;
+ }
   return output;
 }
 
@@ -106,11 +105,14 @@ PCB* removeFromQueueBFirst()
 {
   PCB *output = NULL;
   if(QueueBHead == NULL){
-   if(QueueAHead != NULL)
+   if(QueueAHead != NULL){
      output = QueueAHead;
+     QueueAHead = QueueAHead->nextProcess;
+     dispatchACount++;
+   }
   }
   else{
-    puts("remove from Queue B Head");
+    //puts("remove from Queue B Head");
     output = QueueBHead;
     QueueBHead = QueueBHead->nextProcess;
   }
@@ -121,7 +123,7 @@ PCB* removeFromQueueBFirst()
 // Retrieves a process statistics and terminates it by freeing its memory
 void terminateProcess()
 {
-  puts("process done. Terminate process");
+  printf("process %d done. Terminate process\n",currentCPUProcess->name);
   free(currentCPUProcess);
   currentCPUProcess = NULL;
 }
@@ -162,14 +164,19 @@ bool queueJobFromFile(FILE *file)
 PCB* dispatchProcessFromQueues()
 {
   PCB* process;
-  printf("dispatchedAcount: %d \n",dispatchACount);
-  if(dispatchACount == dispatchRatio){
-    process = removeFromQueueBFirst();
-    dispatchACount = 0;
+  if(QueueAHead == NULL && QueueBHead == NULL){
+    //puts("no process in either queues");
+    process = NULL;
   }else{
-    puts("remove from Queue A first.");
-    process = removeFromQueueAFirst();
-    dispatchACount++;
+    //printf("dispatchedAcount: %d \n",dispatchACount);
+    if(dispatchACount == dispatchRatio){
+      //puts("remove from Queue B first");
+      process = removeFromQueueBFirst();
+      dispatchACount = 0;
+    }else{
+      //puts("remove from Queue A first.");
+      process = removeFromQueueAFirst();
+    }
   }
   return process;
 }
@@ -197,13 +204,13 @@ bool checkQuantum(){
     check = true;
   if(check){
     if(currentCPUProcess->burstTime == quantumA){
-      puts("burst time quantum A reached");
+      //puts("burst time quantum A reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
   }else{
     if(currentCPUProcess->burstTime == quantumB){
-      puts("burst time quantum B reached");
+      //puts("burst time quantum B reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
@@ -238,11 +245,11 @@ void exitCPU()
     if(!currentCPUProcess->demoted)
       updateDemotionCountAndFlag();
     if(currentCPUProcess->demoted){
-      puts("process exiting CPU, add back to queue B");
+      //puts("process exiting CPU, add back to queue B");
       addToBQueue(currentCPUProcess);
     }
     else{
-      puts("process exiting CPU, add back to queue A");
+      //puts("process exiting CPU, add back to queue A");
       //updateDemotionCountAndFlag();
       addToAQueue(currentCPUProcess);
     }
@@ -255,7 +262,7 @@ void exitCPU()
 void updateDemotionCountAndFlag()
 {
   currentCPUProcess->quantumAExceededCount++;
-  printf("quantumAExceededCount: %d\n",currentCPUProcess->quantumAExceededCount);  if(currentCPUProcess->quantumAExceededCount == demotionThreshold)
+  if(currentCPUProcess->quantumAExceededCount == demotionThreshold)
     currentCPUProcess->demoted = true;
 }
 
