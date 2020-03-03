@@ -85,13 +85,17 @@ PCB* removeFromQueueAFirst()
 {
   PCB *output = NULL;
   if(QueueAHead == NULL){
-    if(QueueBHead != NULL)
+    if(QueueBHead != NULL){
       output = QueueBHead;
+      QueueBHead = QueueBHead->nextProcess;
+    }
   }
   else{
     puts("remove from Queue A Head");
     output = QueueAHead;
     QueueAHead = QueueAHead->nextProcess;
+    if(QueueAHead==NULL)
+      puts("YEET");
   }
   return output;
 }
@@ -217,7 +221,7 @@ void continueOrExitAndDispatch()
     currentCPUProcess = dispatchProcessFromQueues();
   else if(checkQuantum() || currentCPUProcess->timeLeft == 0){
     exitCPU();
-    //currentCPUProcess = dispatchProcessFromQueues();
+    currentCPUProcess = dispatchProcessFromQueues();
     //printf("current process added to CPU: %d\n",currentCPUProcess->name);
   }
 }
@@ -231,13 +235,15 @@ void exitCPU()
     terminateProcess();
   }
   else{
+    if(!currentCPUProcess->demoted)
+      updateDemotionCountAndFlag();
     if(currentCPUProcess->demoted){
       puts("process exiting CPU, add back to queue B");
       addToBQueue(currentCPUProcess);
     }
     else{
       puts("process exiting CPU, add back to queue A");
-      updateDemotionCountAndFlag();
+      //updateDemotionCountAndFlag();
       addToAQueue(currentCPUProcess);
     }
   }
@@ -248,10 +254,9 @@ void exitCPU()
 // that are already demoted do not need to be checked/updated as demotuion is irreversable.
 void updateDemotionCountAndFlag()
 {
-  if(currentCPUProcess->quantumAExceededCount == demotionThreshold)
-    currentCPUProcess->demoted = true;
   currentCPUProcess->quantumAExceededCount++;
-  printf("quantumAExceededCount: %d\n",currentCPUProcess->quantumAExceededCount); 
+  printf("quantumAExceededCount: %d\n",currentCPUProcess->quantumAExceededCount);  if(currentCPUProcess->quantumAExceededCount == demotionThreshold)
+    currentCPUProcess->demoted = true;
 }
 
 
@@ -265,10 +270,13 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
   FILE *f;
   f = fopen(filename,"r");
   bool processFile = true;
+  int i = 0;
   while(processFile){
-    continueOrExitAndDispatch();
+    if(i != 0)
+      continueOrExitAndDispatch();
     processFile = queueJobFromFile(f);
     updateAllTimes();
+    i++;
   }
   fclose(f);
   puts("read queue from file done");
