@@ -123,7 +123,8 @@ PCB* removeFromQueueBFirst()
 // Retrieves a process statistics and terminates it by freeing its memory
 void terminateProcess()
 {
-  printf("process %d done. Terminate process\n",currentCPUProcess->name);
+  printf("process %d done. waittime: %d Terminate process\n", \
+    currentCPUProcess->name,currentCPUProcess->waitTime);
   free(currentCPUProcess);
   currentCPUProcess = NULL;
 }
@@ -181,6 +182,13 @@ PCB* dispatchProcessFromQueues()
   return process;
 }
 
+void updateWaitTimes(PCB *Queue){
+  while(Queue != NULL){
+    Queue->waitTime++;
+    Queue = Queue->nextProcess;
+  }
+}
+
 // perform a "tick" by updating wait times, execution time, process time left ...
 // the updated variables can be global or specific for each PCB
 void updateAllTimes ()
@@ -191,10 +199,11 @@ void updateAllTimes ()
   }else{
     currentCPUProcess->timeLeft--;
     currentCPUProcess->burstTime++;
-
+    updateWaitTimes(QueueAHead);
+    updateWaitTimes(QueueBHead);
     printf("CPUProcess: %d timeLEft: %d burstTime: %d \n",\
-    currentCPUProcess->name,currentCPUProcess->timeLeft,currentCPUProcess->burstTime);
-  }
+    currentCPUProcess->name,currentCPUProcess->timeLeft,currentCPUProcess->burstTime);  
+}
 }
 
 bool checkQuantum(){
@@ -204,13 +213,13 @@ bool checkQuantum(){
     check = true;
   if(check){
     if(currentCPUProcess->burstTime == quantumA){
-      //puts("burst time quantum A reached");
+      puts("burst time quantum A reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
   }else{
     if(currentCPUProcess->burstTime == quantumB){
-      //puts("burst time quantum B reached");
+      puts("burst time quantum B reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
@@ -242,8 +251,10 @@ void exitCPU()
     terminateProcess();
   }
   else{
-    if(!currentCPUProcess->demoted)
+    if(!currentCPUProcess->demoted){
+      printf("update Demotion for process: %d \n",currentCPUProcess->name);
       updateDemotionCountAndFlag();
+    }
     if(currentCPUProcess->demoted){
       //puts("process exiting CPU, add back to queue B");
       addToBQueue(currentCPUProcess);
