@@ -53,14 +53,15 @@ void addToAQueue(PCB* toAdd)
 {
   if(QueueAHead == NULL){
     QueueAHead = toAdd;
-    QueueATail = toAdd;
+    //QueueATail = toAdd;
   }else{
     PCB *pointer = QueueAHead;
     while(pointer->nextProcess != NULL)
       pointer = pointer->nextProcess;
-    pointer->nextProcess = toAdd;
+    //pointer->nextProcess = toAdd;
     QueueATail = pointer->nextProcess;
   }
+  QueueATail = toAdd;
 }
 
 // Adds a PCB to the tail of QueueB.
@@ -68,14 +69,15 @@ void addToBQueue(PCB* toAdd)
 {
   if(QueueBHead == NULL){
     QueueBHead = toAdd;
-    QueueBTail = toAdd;
+    //QueueBTail = toAdd;
   }else{
     PCB *pointer = QueueBHead;
     while(pointer->nextProcess != NULL)
       pointer = pointer->nextProcess;
-    pointer->nextProcess = toAdd;
+    //pointer->nextProcess = toAdd;
     QueueBTail = pointer->nextProcess;
   }
+  QueueBTail = toAdd;
 }
 
 
@@ -170,7 +172,7 @@ PCB* dispatchProcessFromQueues()
     process = NULL;
   }else{
     //printf("dispatchedAcount: %d \n",dispatchACount);
-    if(dispatchACount == dispatchRatio){
+    if(dispatchACount >= dispatchRatio){
       //puts("remove from Queue B first");
       process = removeFromQueueBFirst();
       dispatchACount = 0;
@@ -213,13 +215,13 @@ bool checkQuantum(){
     check = true;
   if(check){
     if(currentCPUProcess->burstTime == quantumA){
-      puts("burst time quantum A reached");
+      //puts("burst time quantum A reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
   }else{
     if(currentCPUProcess->burstTime == quantumB){
-      puts("burst time quantum B reached");
+      //puts("burst time quantum B reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
@@ -252,7 +254,7 @@ void exitCPU()
   }
   else{
     if(!currentCPUProcess->demoted){
-      printf("update Demotion for process: %d \n",currentCPUProcess->name);
+//      printf("update Demotion for process: %d \n",currentCPUProcess->name);
       updateDemotionCountAndFlag();
     }
     if(currentCPUProcess->demoted){
