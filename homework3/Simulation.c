@@ -123,6 +123,11 @@ void terminateProcess()
 {
   printf("Terminating process %d . Total waitTime: %d \n", \
     currentCPUProcess->name,currentCPUProcess->waitTime);
+  if(currentCPUProcess->waitTime >= maxWaitTime)
+    maxWaitTime = currentCPUProcess->waitTime;
+  if(currentCPUProcess->waitTime <= minWaitTime)
+    minWaitTime = currentCPUProcess->waitTime;
+  totalWaitTime += currentCPUProcess->waitTime;
   free(currentCPUProcess);
   currentCPUProcess = NULL;
 }
@@ -130,12 +135,16 @@ void terminateProcess()
 // prints final result for current run.
 void printFinalStatistics()
 {
+  double throughput = (double) processesCompleted/ticks;
+  int average = totalWaitTime/processesCompleted;
   printf("end time: %d \n",ticks);
   printf("processes completed: %d \n",processesCompleted);
   printf("execution time: %d \n",executionTime);
-  double throughput = processesCompleted/ticks;
+  printf("idle time: %d \n",idleTime-1);
   printf("troughput: %4f \n",throughput);
-  //printf();
+  printf("max wait time: %d \n",maxWaitTime);
+  printf("min wait time: %d \n",minWaitTime);
+  printf("average wait time: %d \n",average);
 }
 
 // reads next job from the job file and added to the tail queueA.
@@ -168,22 +177,19 @@ PCB* dispatchProcessFromQueues()
 {
   PCB* process;
   if(QueueAHead == NULL && QueueBHead == NULL){
-    //puts("no process in either queues");
     process = NULL;
   }else{
-    //printf("dispatchedAcount: %d \n",dispatchACount);
     if(dispatchACount >= dispatchRatio){
-      //puts("remove from Queue B first");
       process = removeFromQueueBFirst();
       dispatchACount = 0;
     }else{
-      //puts("remove from Queue A first.");
       process = removeFromQueueAFirst();
     }
   }
   return process;
 }
 
+// Update wait times: update wait times of all processes in a given queue
 void updateWaitTimes(PCB *Queue){
   while(Queue != NULL){
     Queue->waitTime++;
@@ -195,22 +201,19 @@ void updateWaitTimes(PCB *Queue){
 // the updated variables can be global or specific for each PCB
 void updateAllTimes ()
 {
-  if(currentCPUProcess == NULL){
+  if(currentCPUProcess == NULL)
     idleTime++;
-//    printf("no process in CPU. Idle time: %d \n",idleTime);
-  }else{
+  else{
     currentCPUProcess->timeLeft--;
     currentCPUProcess->burstTime++;
     updateWaitTimes(QueueAHead);
     updateWaitTimes(QueueBHead);
     executionTime++;
-/*
-    printf("CPUProcess: %d timeLEft: %d burstTime: %d \n",\
-    currentCPUProcess->name,currentCPUProcess->timeLeft,currentCPUProcess->burstTime);
-*/
-}
+  }
 }
 
+// check current CPU process burst time if it has reached time quantum
+// compare current CPU process burst time to quantum from the queue that it got dispatched.
 bool checkQuantum(){
   bool state = false;
   bool check = false;
@@ -218,13 +221,11 @@ bool checkQuantum(){
     check = true;
   if(check){
     if(currentCPUProcess->burstTime == quantumA){
-      //puts("burst time quantum A reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
   }else{
     if(currentCPUProcess->burstTime == quantumB){
-      //puts("burst time quantum B reached");
       state = true;
       currentCPUProcess->burstTime = 0;
     }
@@ -243,7 +244,6 @@ void continueOrExitAndDispatch()
   else if(checkQuantum() || currentCPUProcess->timeLeft == 0){
     exitCPU();
     currentCPUProcess = dispatchProcessFromQueues();
-    //printf("current process added to CPU: %d\n",currentCPUProcess->name);
   }
 }
 
@@ -256,19 +256,12 @@ void exitCPU()
     terminateProcess();
   }
   else{
-    if(!currentCPUProcess->demoted){
-//      printf("update Demotion for process: %d \n",currentCPUProcess->name);
+    if(!currentCPUProcess->demoted)
       updateDemotionCountAndFlag();
-    }
-    if(currentCPUProcess->demoted){
-      //puts("process exiting CPU, add back to queue B");
+    if(currentCPUProcess->demoted)
       addToBQueue(currentCPUProcess);
-    }
-    else{
-      //puts("process exiting CPU, add back to queue A");
-      //updateDemotionCountAndFlag();
-      addToAQueue(currentCPUProcess);
-    }
+    else
+     addToAQueue(currentCPUProcess);
   }
 }
 
@@ -306,7 +299,6 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
         }
      }
     }
-    //updateAllTimes();
     ticks++;
   }
   fclose(f);
@@ -316,7 +308,6 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
 
 int main(int argc, char** argv)
 {
-  // parse inputs (from Lab 3)
   if(argc != 4){
     puts("Incorrect number of input arguments. Exit Main");
     return(0);
