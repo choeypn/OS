@@ -2,9 +2,14 @@ Simulation Report
 CSCI 447
 Nat Choeypant
 
-For my simulation, I tested my simulation by starting at the smallest set of values (1,1), then increment by 1 for each element (1,2), (2,2), (3,2).
-During the simulation, it seemed that my simulation processed every processes from the file, but the schedule algorithm seemed to order all processes exactly the same.
-After running this simulation, there is no optimal set of values for this simulation because it will schedule all processes the same.
+For my simulation, I tested my simulation by starting at the smallest set of values (1,1), 
+then increment by 1 for each element (1,2), (2,2), (3,2).
+
+During the simulation, it seemed that my simulation processed every processes from the file, 
+but the schedule algorithm seemed to order all processes exactly the same.
+
+After running this simulation, there is no optimal set of values for this simulation 
+because it will schedule all processes the same.
 
 Here is the script of my simulation:
 
