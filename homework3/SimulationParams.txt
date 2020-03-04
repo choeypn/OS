@@ -1,0 +1,83 @@
+Simulation Report
+CSCI 447
+Nat Choeypant
+
+For my simulation, I tested my simulation by starting at the smallest set of values (1,1), then increment by 1 for each element (1,2), (2,2), (3,2).
+During the simulation, it seemed that my simulation processed every processes from the file, but the schedule algorithm seemed to order all processes exactly the same.
+After running this simulation, there is no optimal set of values for this simulation because it will schedule all processes the same.
+
+Here is the script of my simulation:
+
+choeypn@cf405-13:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 1 1
+Demotion threshold value received : 1
+Dispatch ratio value received : 1
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 6094 
+min wait time: 0 
+average wait time: 2377 
+======================
+choeypn@cf405-13:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 1 2
+Demotion threshold value received : 1
+Dispatch ratio value received : 2
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 8172 
+min wait time: 0 
+average wait time: 2453 
+======================
+choeypn@cf405-13:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt2 2
+Demotion threshold value received : 2
+Dispatch ratio value received : 2
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 5599 
+min wait time: 0 
+average wait time: 2202 
+======================
+choeypn@cf405-13:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt3 2
+Demotion threshold value received : 3
+Dispatch ratio value received : 2
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 5411 
+min wait time: 0 
+average wait time: 2123 
+======================
+choeypn@cf405-13:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 3 3
+Demotion threshold value received : 3
+Dispatch ratio value received : 3
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 5682 
+min wait time: 0 
+average wait time: 2139 
+======================
+choeypn@cf405-13:~/CS447/csci447_w20/homework3$ exit
+exit
+
