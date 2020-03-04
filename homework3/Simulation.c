@@ -39,7 +39,7 @@ int dispatchRatio;
 int dispatchACount = 0;            // current dispatch count from Queue A
 int demotionThreshold;
 int processesCompleted = 0;
-int acceptedJobs = 0;
+int ticks = 0;
 int executionTime = 0;
 int idleTime = 0;             // the time the CPU spent as idle (no current process)
 int totalWaitTime = 0;
@@ -51,33 +51,31 @@ int pNum = 1;
 // Adds a PCB to the tail of QueueA
 void addToAQueue(PCB* toAdd)
 {
+  if(toAdd->nextProcess != NULL)
+    toAdd->nextProcess = NULL;
   if(QueueAHead == NULL){
     QueueAHead = toAdd;
-    //QueueATail = toAdd;
   }else{
     PCB *pointer = QueueAHead;
     while(pointer->nextProcess != NULL)
       pointer = pointer->nextProcess;
-    //pointer->nextProcess = toAdd;
-    QueueATail = pointer->nextProcess;
+    pointer->nextProcess = toAdd;
   }
-  QueueATail = toAdd;
 }
 
 // Adds a PCB to the tail of QueueB.
 void addToBQueue(PCB* toAdd)
 {
+  if(toAdd->nextProcess != NULL)
+    toAdd->nextProcess = NULL;
   if(QueueBHead == NULL){
     QueueBHead = toAdd;
-    //QueueBTail = toAdd;
   }else{
     PCB *pointer = QueueBHead;
     while(pointer->nextProcess != NULL)
       pointer = pointer->nextProcess;
-    //pointer->nextProcess = toAdd;
-    QueueBTail = pointer->nextProcess;
+    pointer->nextProcess = toAdd;
   }
-  QueueBTail = toAdd;
 }
 
 
@@ -93,7 +91,6 @@ PCB* removeFromQueueAFirst()
     }
   }
   else{
-    //puts("remove from Queue A Head");
     output = QueueAHead;
     QueueAHead = QueueAHead->nextProcess;
     dispatchACount++;
@@ -114,7 +111,6 @@ PCB* removeFromQueueBFirst()
    }
   }
   else{
-    //puts("remove from Queue B Head");
     output = QueueBHead;
     QueueBHead = QueueBHead->nextProcess;
   }
@@ -125,7 +121,7 @@ PCB* removeFromQueueBFirst()
 // Retrieves a process statistics and terminates it by freeing its memory
 void terminateProcess()
 {
-  printf("process %d done. waittime: %d Terminate process\n", \
+  printf("Terminating process %d . Total waitTime: %d \n", \
     currentCPUProcess->name,currentCPUProcess->waitTime);
   free(currentCPUProcess);
   currentCPUProcess = NULL;
@@ -134,7 +130,12 @@ void terminateProcess()
 // prints final result for current run.
 void printFinalStatistics()
 {
-// to be implemented
+  printf("end time: %d \n",ticks);
+  printf("processes completed: %d \n",processesCompleted);
+  printf("execution time: %d \n",executionTime);
+  double throughput = processesCompleted/ticks;
+  printf("troughput: %4f \n",throughput);
+  //printf();
 }
 
 // reads next job from the job file and added to the tail queueA.
@@ -153,7 +154,6 @@ bool queueJobFromFile(FILE *file)
       p->quantumAExceededCount = 0;
       p->demoted = false;
       p->nextProcess = NULL;
-      printf("process number: %d timeleft: %d \n",p->name,p->timeLeft);
       addToAQueue(p);
       pNum++;
     }
@@ -197,14 +197,17 @@ void updateAllTimes ()
 {
   if(currentCPUProcess == NULL){
     idleTime++;
-    printf("no process in CPU. Idle time: %d \n",idleTime);
+//    printf("no process in CPU. Idle time: %d \n",idleTime);
   }else{
     currentCPUProcess->timeLeft--;
     currentCPUProcess->burstTime++;
     updateWaitTimes(QueueAHead);
     updateWaitTimes(QueueBHead);
+    executionTime++;
+/*
     printf("CPUProcess: %d timeLEft: %d burstTime: %d \n",\
-    currentCPUProcess->name,currentCPUProcess->timeLeft,currentCPUProcess->burstTime);  
+    currentCPUProcess->name,currentCPUProcess->timeLeft,currentCPUProcess->burstTime);
+*/
 }
 }
 
@@ -290,16 +293,25 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
   FILE *f;
   f = fopen(filename,"r");
   bool processFile = true;
-  int i = 0;
-  while(processFile){
-    if(i != 0)
+  while(1){
+    if(ticks != 0)
       continueOrExitAndDispatch();
     processFile = queueJobFromFile(f);
     updateAllTimes();
-    i++;
+    if(!processFile){
+      if(QueueAHead == NULL && QueueBHead == NULL){
+        if(QueueATail == NULL && QueueBTail == NULL){
+          if(currentCPUProcess == NULL)
+            break;
+        }
+     }
+    }
+    //updateAllTimes();
+    ticks++;
   }
   fclose(f);
   puts("read queue from file done");
+  printFinalStatistics();
 }
 
 int main(int argc, char** argv)
