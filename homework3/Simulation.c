@@ -119,10 +119,13 @@ PCB* removeFromQueueBFirst()
 
 
 // Retrieves a process statistics and terminates it by freeing its memory
+// Provided print statement for terminating process and wait time.
 void terminateProcess()
 {
+/*
   printf("Terminating process %d . Total waitTime: %d \n", \
     currentCPUProcess->name,currentCPUProcess->waitTime);
+*/
   if(currentCPUProcess->waitTime >= maxWaitTime)
     maxWaitTime = currentCPUProcess->waitTime;
   if(currentCPUProcess->waitTime <= minWaitTime)
@@ -302,8 +305,10 @@ void Simulate(char *filename,int demotionThreshold, int dispatchRatio) {
     ticks++;
   }
   fclose(f);
-  puts("read queue from file done");
+  puts("process from file done");
+  puts("======================");
   printFinalStatistics();
+  puts("======================");
 }
 
 int main(int argc, char** argv)
