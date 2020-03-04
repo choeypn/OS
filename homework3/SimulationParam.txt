@@ -1,0 +1,85 @@
+Simulation Report
+CSCI 447
+Nat Choeypant
+
+For my simulation, I testedmy simulation by starting at an initial set of values (1,1).
+Then I increment the threshold by one to test the simulation (1,1) (2,1) (3,1) ...
+
+After running the simulation, it seemed that by increasing number of the threshold, the average
+wait time decreased, but after it reached threshold of 3, the average waiting time increased.
+Thus the optimal solution is a set of values that minimize average waiting time. 
+
+The optimal solution is (3 1), or demotion threshold of 3 and dispatch ratio of 1.
+
+Here is the script of the simulation:
+
+choeypn@linux-05:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 1 1
+Demotion threshold value received : 1
+Dispatch ratio value received : 1
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 6094 
+min wait time: 0 
+average wait time: 2377 
+======================
+choeypn@linux-05:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 2 1
+Demotion threshold value received : 2
+Dispatch ratio value received : 1
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 4896 
+min wait time: 0 
+average wait time: 2181 
+======================
+choeypn@linux-05:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 3 1
+Demotion threshold value received : 3
+Dispatch ratio value received : 1
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 4685 
+min wait time: 0 
+average wait time: 2092 
+======================
+choeypn@linux-05:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 3 2
+Demotion threshold value received : 3
+Dispatch ratio value received : 2
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 5411 
+min wait time: 0 
+average wait time: 2123 
+======================
+choeypn@linux-05:~/CS447/csci447_w20/homework3$ ./Simulation NewJobs.txt 4 1
+Demotion threshold value received : 4
+Dispatch ratio value received : 1
+process from file done
+======================
+end time: 14308 
+processes completed: 401 
+execution time: 14283 
+idle time: 25 
+troughput: 0.028026 
+max wait time: 4780 
+min wait time: 0 
+average wait time: 2096 
+======================
