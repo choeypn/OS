@@ -10,19 +10,37 @@ typedef struct pageTable{
   int* ASID;
 }pageTable;
 
+
 //get input arg for allocation
 //return allocation type from input arg
 char* getAllocationMode(char in){
   char *alc;
   if(in == 's')
-    alc = "Spllit";
+    alc = "Split";
   else if(in == 'f')
     alc = "Free";
   else
-    alc = "Invalid";
+    alc = "Invalid input, go with free for all";
   return alc;
 }
+//function that processes input file line 
+//print incoming request page number of file line
+void processLine(pageTable* inv,FILE *f,int flag){
+  char address[6];
+  char *c = fgets(address,sizeof(address),f);
+  if(c != NULL){
+    inv->timeStamp[0] = 0;
+    inv->pageNumber[0] = c;
+    if(flag == 1)
+      inv->ASID[0] = 1;
+    else
+      inv->ASID[0] = 2;
+    printf("%d : %s : %d \n",inv->timeStamp[0],inv->pageNumber[0],inv->ASID[0]);
+  }
+}
 
+//a function that initialize inverted page table for the simulation
+//and initialize every entry with -1 as empty.
 pageTable* initializePageTable(){
   pageTable* invertedTable = malloc(sizeof(pageTable));
   invertedTable->timeStamp = malloc(sizeof(int)*4096);
@@ -43,6 +61,7 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
   char *allc = getAllocationMode(allocation);
   FILE* f1;
   FILE* f2;
+  int process = 1;
   f1 = fopen(fileName1,"r");
   f2 = fopen(fileName2,"r");
   if(f1 == NULL || f2 == NULL){
@@ -51,8 +70,7 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
   }
   if(state){
     pageTable* inv = initializePageTable();  
-
-//    printf("%d : %s : %d \n",inv->timeStamp[2541],inv->pageNumber[2541],inv->ASID[2541]);
+    processLine(inv,f1,process);
     free(inv);
     fclose(f1);
     fclose(f2);
