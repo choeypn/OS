@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 //#include "simulation.h"
   
 //a structure for pagetable
@@ -15,6 +15,7 @@ int MEMSIZE2 = 64;
 int MEMSIZE3 = 128;
 int FILEONELINE = 1;
 int FILETWOLINE = 1;
+int PAGEFAULTONE = 0;
 
 pageTable *invTable1;
 pageTable *invTable2;
@@ -34,10 +35,7 @@ char* getAllocationMode(char in){
   return alc;
 }
 
-//function that find empty spot in given table.
-//flag is for identifying size of table.
-int findEmptySpot(pageTable *table,int flag){
-  int state = -1;
+int getMemSize(int flag){
   int size = 0;
   switch(flag){
     case 1:
@@ -52,6 +50,14 @@ int findEmptySpot(pageTable *table,int flag){
     default:
           puts("error, invalid flag value");
   }
+  return size;
+}
+
+//function that find empty spot in given table.
+//flag is for identifying size of table.
+int findEmptySpot(pageTable *table,int flag){
+  int state = -1;
+  int size = getMemSize(flag);
   for(int i = 0; i < size; i++){
     if(table->timeStamp[i] == -1){
       state = i;
@@ -61,24 +67,56 @@ int findEmptySpot(pageTable *table,int flag){
   return state;
 }
 
+//function that check for pagenumber in the page table
+//return true if page is found and update time stamp 
+//increase number of page fault if not found.
+int checkPageNum(pageTable *table,int flag,char *pageNum){
+  int state = 0;
+  int size = getMemSize(flag);
+  for(int i = 0; i < size; i++){
+    if(strcoll(table->pageNumber[i],pageNum) == 0){
+      puts("page found in memory");
+      table->timeStamp = FILEONELINE;
+      state = 1;
+    } else{  
+      PAGEFAULTONE++;
+    }   
+  }
+  return state;
+}
+
+//function that replace a specific line from the given table with
+//new datas
+void replaceLineinTable(pageTable *table,int line,char *c,int flag){
+  table->timeStamp[line] = FILEONELINE;
+  table->pageNumber[line] = c;
+  if(flag == 1)
+    table->ASID[line] = 1;
+  else
+    table->ASID[line] = 2; 
+}
+
+
 //function that processes input file line 
 //print incoming request page number of file line
-void processLine(FILE *f,int flag){
+int processLine(FILE *f,int flag){
+  int eof = 0;
   int emptySpot;
   char address[6];
   char *c = fgets(address,sizeof(address),f);
   if(c != NULL){
-    if((emptySpot = findEmptySpot(invTable1,1)) != -1){
-      puts("yes");
-      invTable1->timeStamp[emptySpot] = 0;
-      invTable1->pageNumber[emptySpot] = c;
-      if(flag == 1)
-        invTable1->ASID[emptySpot] = 1;
-      else
-        invTable1->ASID[emptySpot] = 2;
-      printf("%d : %s : %d \n",invTable1->timeStamp[0],invTable1->pageNumber[0],invTable1->ASID[0]);
+    if(!checkPageNum(invTable1,1,c)){
+      if((emptySpot = findEmptySpot(invTable1,1)) != -1){
+        replaceLineinTable(invTable1,emptySpot,c,1);
+      }
+      else{
+        //LRU
+      }
+      FILEONELINE++;
+      eof = 1;
     }
   }
+  return eof;
 }
 
 //a function that initialize inverted page table for the simulation
@@ -104,6 +142,7 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
   FILE* f1;
   FILE* f2;
   int process = 1;
+  int lineExist = 1;
   f1 = fopen(fileName1,"r");
   f2 = fopen(fileName2,"r");
   if(f1 == NULL || f2 == NULL){
@@ -112,7 +151,10 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
   }
   if(state){
     invTable1 = initializePageTable(MEMSIZE1);  
-    processLine(f1,process);
+    while(lineExist){
+      lineExist = processLine(f1,process);
+    }
+    puts("process line done");
     free(invTable1);
     fclose(f1);
     fclose(f2);
