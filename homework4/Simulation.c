@@ -10,6 +10,16 @@ typedef struct pageTable{
   int* ASID;
 }pageTable;
 
+int MEMSIZE1 = 32;
+int MEMSIZE2 = 64;
+int MEMSIZE3 = 128;
+int FILEONELINE = 1;
+int FILETWOLINE = 1;
+
+pageTable *invTable1;
+pageTable *invTable2;
+pageTable *invTable3; 
+
 
 //get input arg for allocation
 //return allocation type from input arg
@@ -23,6 +33,7 @@ char* getAllocationMode(char in){
     alc = "Invalid input, go with free for all";
   return alc;
 }
+
 //function that processes input file line 
 //print incoming request page number of file line
 void processLine(pageTable* inv,FILE *f,int flag){
@@ -41,12 +52,12 @@ void processLine(pageTable* inv,FILE *f,int flag){
 
 //a function that initialize inverted page table for the simulation
 //and initialize every entry with -1 as empty.
-pageTable* initializePageTable(){
+pageTable* initializePageTable(int size){
   pageTable* invertedTable = malloc(sizeof(pageTable));
-  invertedTable->timeStamp = malloc(sizeof(int)*4096);
-  invertedTable->pageNumber = malloc(4096*(sizeof(char)*8));
-  invertedTable->ASID = malloc(sizeof(int)*4096);
-  for(int i = 0; i < 4096; i++){
+  invertedTable->timeStamp = malloc(sizeof(int)*size);
+  invertedTable->pageNumber = malloc(size*(sizeof(char)*6));
+  invertedTable->ASID = malloc(sizeof(int)*size);
+  for(int i = 0; i < size; i++){
     invertedTable->timeStamp[i] = -1;
     invertedTable->pageNumber[i] = "-1";
     invertedTable->ASID[i] = -1;
@@ -69,9 +80,9 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
     state = 0;
   }
   if(state){
-    pageTable* inv = initializePageTable();  
-    processLine(inv,f1,process);
-    free(inv);
+    invTable1 = initializePageTable(MEMSIZE1);  
+    processLine(invTable1,f1,process);
+    free(invTable1);
     fclose(f1);
     fclose(f2);
     printf("%s \n",allc);
