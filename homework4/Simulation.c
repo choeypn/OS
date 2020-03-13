@@ -113,11 +113,18 @@ void replaceLineinTable(pageTable *table,int line,char *c,int flag){
 
 //function that processes input file line 
 //print incoming request page number of file line
-int processLine(FILE *f,int flag){
+int processLine(FILE *f1,FILE *f2,int process){
   int eof = 0;
-  int emptySpot;
+  int emptySpot = -1;
+  int filenum = 0;
   char address[6];
-  char *c = fgets(address,sizeof(address),f);
+  char *c;
+  if(process == 0)
+    c = fgets(address,sizeof(address),f1);
+  else{
+    c = fgets(address,sizeof(address),f2);
+    filenum = 1;
+  }
   if(c != NULL){
     if(!checkPageNum(invTable1,1,c)){
       if((emptySpot = findEmptySpot(invTable1,1)) != -1){
@@ -127,9 +134,12 @@ int processLine(FILE *f,int flag){
         emptySpot = getLRUspot(invTable1,1);
         replaceLineinTable(invTable1,emptySpot,c,1);
       }
-      FILEONELINE++;
-      eof = 1;
     }
+    if(filenum == 0)
+      FILEONELINE++;
+    else
+      FILETWOLINE++;   
+   eof = 1; 
   }
   return eof;
 }
@@ -156,8 +166,9 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
   char *allc = getAllocationMode(allocation);
   FILE* f1;
   FILE* f2;
-  int process = 1;
+  int process = 0;
   int lineExist = 1;
+  int track = 1;
   f1 = fopen(fileName1,"r");
   f2 = fopen(fileName2,"r");
   if(f1 == NULL || f2 == NULL){
@@ -167,9 +178,15 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
   if(state){
     invTable1 = initializePageTable(MEMSIZE1);  
     while(lineExist){
-      lineExist = processLine(f1,process);
+      lineExist = processLine(f1,f2,process);
+      if(track % 20 == 0)
+        process = (process+1) % 2;
+      track++;
     }
     puts("process line done");
+    printf("track : %d \n",track);
+    printf("fileONELine: %d \n",FILEONELINE);
+    printf("fileTWOLine: %d \n",FILETWOLINE);
     printf("page fault : %d \n",PAGEFAULTONE);
     free(invTable1);
     fclose(f1);
