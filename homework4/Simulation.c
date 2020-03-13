@@ -34,19 +34,50 @@ char* getAllocationMode(char in){
   return alc;
 }
 
+//function that find empty spot in given table.
+//flag is for identifying size of table.
+int findEmptySpot(pageTable *table,int flag){
+  int state = -1;
+  int size = 0;
+  switch(flag){
+    case 1:
+          size = MEMSIZE1;
+          break;
+    case 2:
+          size = MEMSIZE2;
+          break;
+    case 3:
+          size = MEMSIZE3;
+          break;
+    default:
+          puts("error, invalid flag value");
+  }
+  for(int i = 0; i < size; i++){
+    if(table->timeStamp[i] == -1){
+      state = i;
+      break;
+    }
+  }
+  return state;
+}
+
 //function that processes input file line 
 //print incoming request page number of file line
-void processLine(pageTable* inv,FILE *f,int flag){
+void processLine(FILE *f,int flag){
+  int emptySpot;
   char address[6];
   char *c = fgets(address,sizeof(address),f);
   if(c != NULL){
-    inv->timeStamp[0] = 0;
-    inv->pageNumber[0] = c;
-    if(flag == 1)
-      inv->ASID[0] = 1;
-    else
-      inv->ASID[0] = 2;
-    printf("%d : %s : %d \n",inv->timeStamp[0],inv->pageNumber[0],inv->ASID[0]);
+    if((emptySpot = findEmptySpot(invTable1,1)) != -1){
+      puts("yes");
+      invTable1->timeStamp[emptySpot] = 0;
+      invTable1->pageNumber[emptySpot] = c;
+      if(flag == 1)
+        invTable1->ASID[emptySpot] = 1;
+      else
+        invTable1->ASID[emptySpot] = 2;
+      printf("%d : %s : %d \n",invTable1->timeStamp[0],invTable1->pageNumber[0],invTable1->ASID[0]);
+    }
   }
 }
 
@@ -81,7 +112,7 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
   }
   if(state){
     invTable1 = initializePageTable(MEMSIZE1);  
-    processLine(invTable1,f1,process);
+    processLine(f1,process);
     free(invTable1);
     fclose(f1);
     fclose(f2);
