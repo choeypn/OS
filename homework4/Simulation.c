@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 //#include "simulation.h"
   
 //a structure for pagetable
@@ -75,14 +76,27 @@ int checkPageNum(pageTable *table,int flag,char *pageNum){
   int size = getMemSize(flag);
   for(int i = 0; i < size; i++){
     if(strcoll(table->pageNumber[i],pageNum) == 0){
-      puts("page found in memory");
-      table->timeStamp = FILEONELINE;
+      table->timeStamp[i] = FILEONELINE;
       state = 1;
+      break;
     } else{  
       PAGEFAULTONE++;
-    }   
+    }
   }
   return state;
+}
+
+int getLRUspot(pageTable *table,int flag){
+  int min = INT_MAX;
+  int size = getMemSize(flag);
+  int spot = -1;
+  for(int i = 0; i < size; i++){
+    if(table->timeStamp[i] < min){
+      min = table->timeStamp[i];
+      spot = i;
+    }
+  }
+  return spot;
 }
 
 //function that replace a specific line from the given table with
@@ -110,7 +124,8 @@ int processLine(FILE *f,int flag){
         replaceLineinTable(invTable1,emptySpot,c,1);
       }
       else{
-        //LRU
+        emptySpot = getLRUspot(invTable1,1);
+        replaceLineinTable(invTable1,emptySpot,c,1);
       }
       FILEONELINE++;
       eof = 1;
@@ -155,6 +170,7 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
       lineExist = processLine(f1,process);
     }
     puts("process line done");
+    printf("page fault : %d \n",PAGEFAULTONE);
     free(invTable1);
     fclose(f1);
     fclose(f2);
