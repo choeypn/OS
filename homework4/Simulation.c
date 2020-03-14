@@ -147,7 +147,7 @@ int handleSplit(pageTable* table,int size,char *pageNum,int process){
 int checkPageNum(pageTable *table,int flag,char *pageNum,int process){
   int state = 0;
   int size = getMemSize(flag);
-  if(ALLC == 'f')
+  if(ALLC != 's')
     state = handleFreeForAll(table,size,pageNum,process);
   else
     state = handleSplit(table,size,pageNum,process);
