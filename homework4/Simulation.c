@@ -7,8 +7,8 @@
 int MEMSIZE1 = 32;
 int MEMSIZE2 = 64;
 int MEMSIZE3 = 128;
-int FILEONELINE = 1;
-int FILETWOLINE = 1;
+int FILEONELINE = 0;
+int FILETWOLINE = 0;
 int PAGEFAULTONE = 0; 
 
 typedef struct pageTable{
@@ -73,25 +73,12 @@ int findEmptySpot(pageTable *table,int flag){
 int checkPageNum(pageTable *table,int flag,char *pageNum){
   int state = 0;
   int size = getMemSize(flag);
-  puts("---------");
-  for(int i = 0; i < size;i++){
-    printf("%d %s \n",table->timeStamp[i],table->pageNumber[i]);
-  }
-  puts("---------");
-  printf("incoming %s \n",pageNum);
   for(int i = 0; i < size; i++){
     if(strcoll(table->pageNumber[i],pageNum) == 0){
-      puts("matched");
       table->timeStamp[i] = FILEONELINE;
       state = 1;
       break;
     }
-/*
-  else if(strcoll(table->pageNumber[i],"-1") == 0){
-      puts("emptyspot found");
-      break; 
-    }
-*/
   }
   return state;
 }
@@ -135,18 +122,18 @@ int processLine(FILE *f1,FILE *f2,int process){
     c = fgets(address,sizeof(address),f2);
     filenum = 1;
   }
-  c[5] = '\0';
   if(c != NULL){
+    c[5] = '\0';
     if(!checkPageNum(invTable1,1,c)){
       PAGEFAULTONE++;
       if((emptySpot = findEmptySpot(invTable1,1)) != -1){
         replaceLineinTable(invTable1,emptySpot,c,1);
-        printf("replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
+       // printf("replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
       }
       else{
         emptySpot = getLRUspot(invTable1,1);
         replaceLineinTable(invTable1,emptySpot,c,1);
-        printf("LRU replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
+       // printf("LRU replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
       }
     }
     if(filenum == 0)
@@ -197,7 +184,6 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
       lineExist = processLine(f1,f2,process);
       if(track % 20 == 0){
         process = (process+1) % 2;
-        break;
       }
       track++;
     }
@@ -214,7 +200,6 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
 }
 
 int main(int argc, char** argv) {
-  // Run simulation
   if(argc != 4){
     puts("Incorrect number of input args. Exit");
     return(0);
