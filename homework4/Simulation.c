@@ -10,31 +10,16 @@ int MEMSIZE3 = 128;
 int FILEONELINE = 1;
 int FILETWOLINE = 1;
 int PAGEFAULTONE = 0; 
-//a structure for pagetable
+
 typedef struct pageTable{
-  int timeStamp[32];
-  char pageNumber[32][6];
-  int ASID[32];
+  int* timeStamp;
+  char** pageNumber;
+  int* ASID;
 }pageTable;
 
-//a structure for pagetable
-typedef struct pageTableTwo{
-  int timeStamp[64];
-  char pageNumber[64][6];
-  int ASID[64];
-}pageTableTwo;
-
-//a structure for pagetable
-typedef struct pageTableThree{
-  int timeStamp[128];
-  char pageNumber[128][6];
-  int ASID[128];
-}pageTableThree;
-
-
 pageTable *invTable1;
-pageTableTwo *invTable2;
-pageTableThree *invTable3; 
+pageTable *invTable2;
+pageTable *invTable3; 
 
 
 //get input arg for allocation
@@ -88,16 +73,25 @@ int findEmptySpot(pageTable *table,int flag){
 int checkPageNum(pageTable *table,int flag,char *pageNum){
   int state = 0;
   int size = getMemSize(flag);
+  puts("---------");
+  for(int i = 0; i < size;i++){
+    printf("%d %s \n",table->timeStamp[i],table->pageNumber[i]);
+  }
+  puts("---------");
+  printf("incoming %s \n",pageNum);
   for(int i = 0; i < size; i++){
     if(strcoll(table->pageNumber[i],pageNum) == 0){
       puts("matched");
       table->timeStamp[i] = FILEONELINE;
       state = 1;
       break;
-    } else if(strcoll(table->pageNumber[i],"-1") == 0){
+    }
+/*
+  else if(strcoll(table->pageNumber[i],"-1") == 0){
       puts("emptyspot found");
       break; 
     }
+*/
   }
   return state;
 }
@@ -119,7 +113,7 @@ int getLRUspot(pageTable *table,int flag){
 //new datas
 void replaceLineinTable(pageTable *table,int line,char *c,int flag){
   table->timeStamp[line] = FILEONELINE;
-  strcpy(table->pageNumber[line],c);
+  table->pageNumber[line] = strdup(c);
   if(flag == 1)
     table->ASID[line] = 1;
   else
@@ -142,8 +136,6 @@ int processLine(FILE *f1,FILE *f2,int process){
     filenum = 1;
   }
   c[5] = '\0';
-  printf("%s \n",c);
-  //printf("pagenumber 0: %s \n",invTable1->pageNumber[0]);
   if(c != NULL){
     if(!checkPageNum(invTable1,1,c)){
       PAGEFAULTONE++;
@@ -170,9 +162,14 @@ int processLine(FILE *f1,FILE *f2,int process){
 //and initialize every entry with -1 as empty.
 pageTable* initializePageTable(int size){
   pageTable* invertedTable = malloc(sizeof(pageTable));
+  invertedTable->timeStamp = malloc(sizeof(int)*size);
+  invertedTable->pageNumber = malloc(sizeof(char*)*size);
+  for(int i = 0; i < size; i++)
+    invertedTable->pageNumber[i] = malloc(sizeof(char)*6);
+  invertedTable->ASID = malloc(sizeof(int)*size);
   for(int i = 0; i < size; i++){
     invertedTable->timeStamp[i] = -1;
-    invertedTable->pageNumber[i][0] = '-';
+    invertedTable->pageNumber[i] = "-1";
     invertedTable->ASID[i] = -1;
   }
   return invertedTable;
