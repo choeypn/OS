@@ -1,0 +1,21 @@
+Script started on 2020-03-14 16:02:38-0700
+choeypn@linux-01:~/CS447/csci447_w20/homework4$ exittmux[2Plscd homework4/ls[Kcd CS447/csci447_w20/ls[Kcd CS447/csci447_w20/ls[Kcd homework4/ls[Ktmuxexit[K./Simulation trace1.txt r[Ktrace2.txt f
+process line done
+=============================
+           Allocation: Free 
+ 32 frames page fault: 267573 
+ 64 frames page fault: 134182 
+128 frames page fault: 81843 
+=============================
+choeypn@linux-01:~/CS447/csci447_w20/homework4$ ./Simulation trace1.txt trace2.txt f[Ks
+process line done
+=============================
+           Allocation: Split 
+ 32 frames page fault: 289638 
+ 64 frames page fault: 132906 
+128 frames page fault: 80820 
+=============================
+choeypn@linux-01:~/CS447/csci447_w20/homework4$ exit
+exit
+
+Script done on 2020-03-14 16:03:07-0700
