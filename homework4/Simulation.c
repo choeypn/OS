@@ -70,19 +70,26 @@ int findEmptySpot(pageTable *table,int flag){
 //function that check for pagenumber in the page table
 //return true if page is found and update time stamp 
 //increase number of page fault if not found.
-int checkPageNum(pageTable *table,int flag,char *pageNum){
+int checkPageNum(pageTable *table,int flag,char *pageNum,int process){
   int state = 0;
   int size = getMemSize(flag);
   for(int i = 0; i < size; i++){
     if(strcoll(table->pageNumber[i],pageNum) == 0){
-      table->timeStamp[i] = FILEONELINE;
-      state = 1;
-      break;
+      if(table->ASID[i] == process){
+        if(process == 0)
+          table->timeStamp[i] = FILEONELINE;
+        else
+          table->timeStamp[i] = FILETWOLINE;
+        state = 1;
+        break;
+      }
     }
   }
   return state;
 }
 
+//function that find the least recently used spot in the table.
+//return line # of LRU
 int getLRUspot(pageTable *table,int flag){
   int min = INT_MAX;
   int size = getMemSize(flag);
@@ -98,13 +105,13 @@ int getLRUspot(pageTable *table,int flag){
 
 //function that replace a specific line from the given table with
 //new datas
-void replaceLineinTable(pageTable *table,int line,char *c,int flag){
+void replaceLineinTable(pageTable *table,int line,char *c,int process){
   table->timeStamp[line] = FILEONELINE;
   table->pageNumber[line] = strdup(c);
-  if(flag == 1)
-    table->ASID[line] = 1;
+  if(process == 0)
+    table->ASID[line] = 0;
   else
-    table->ASID[line] = 2; 
+    table->ASID[line] = 1; 
 }
 
 
@@ -115,24 +122,24 @@ int processLine(FILE *f1,FILE *f2,int process){
   int emptySpot = -1;
   int filenum = 0;
   char address[12];
-  char *c;
+  char *in;
   if(process == 0)
-    c = fgets(address,sizeof(address),f1);
+    in = fgets(address,sizeof(address),f1);
   else{
-    c = fgets(address,sizeof(address),f2);
+    in = fgets(address,sizeof(address),f2);
     filenum = 1;
   }
-  if(c != NULL){
-    c[5] = '\0';
-    if(!checkPageNum(invTable1,1,c)){
+  if(in != NULL){
+    in[5] = '\0';
+    if(!checkPageNum(invTable1,1,in,process)){
       PAGEFAULTONE++;
       if((emptySpot = findEmptySpot(invTable1,1)) != -1){
-        replaceLineinTable(invTable1,emptySpot,c,1);
+        replaceLineinTable(invTable1,emptySpot,in,process);
        // printf("replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
       }
       else{
         emptySpot = getLRUspot(invTable1,1);
-        replaceLineinTable(invTable1,emptySpot,c,1);
+        replaceLineinTable(invTable1,emptySpot,in,process);
        // printf("LRU replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
       }
     }
