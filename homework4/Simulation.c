@@ -79,12 +79,62 @@ void incrementPageFault(int flag){
 
 //function that find empty spot in given table.
 //flag is for identifying size of table.
-int findEmptySpot(pageTable *table,int flag){
-  int state = -1;
+int findEmptySpot(pageTable *table,int flag,int process){
+  int spot = -1;
   int size = getMemSize(flag);
-  for(int i = 0; i < size; i++){
+  int start = 0;
+  int end = size;
+  if(ALLC == 's'){
+    if(process == 0) 
+      end = size/2;
+    else
+      start = size/2;  
+  }
+  for(int i = start; i < end; i++){
     if(table->timeStamp[i] == -1){
-      state = i;
+      spot = i;
+      break;
+    }
+  }
+  return spot;
+}
+
+//handle check pagenumber for free for all
+//return true if page found
+int handleFreeForAll(pageTable* table,int size,char *pageNum,int process){
+  int state = 0;
+  for(int i = 0; i < size; i++){
+    if(strcoll(table->pageNumber[i],pageNum) == 0){
+      if(table->ASID[i] == process){
+        if(process == 0)
+          table->timeStamp[i] = FILEONELINE;
+        else
+          table->timeStamp[i] = FILETWOLINE;
+        state = 1;
+        break;
+      }
+    }  
+  }
+  return state;
+}
+
+//handle check pagenumber for split
+//check for existing pagenumber in process frames from given process
+int handleSplit(pageTable* table,int size,char *pageNum,int process){
+  int state = 0;
+  int start = 0;
+  int end = size;
+  if(process == 0)
+    end = size/2;
+  else
+    start = size/2;
+  for(int i = start; i < end; i++){
+    if(strcoll(table->pageNumber[i],pageNum) == 0){
+      if(process == 0)
+        table->timeStamp[i] = FILEONELINE;
+      else
+        table->timeStamp[i] = FILETWOLINE;
+      state = 1;
       break;
     }
   }
@@ -97,28 +147,28 @@ int findEmptySpot(pageTable *table,int flag){
 int checkPageNum(pageTable *table,int flag,char *pageNum,int process){
   int state = 0;
   int size = getMemSize(flag);
-  for(int i = 0; i < size; i++){
-    if(strcoll(table->pageNumber[i],pageNum) == 0){
-      if(table->ASID[i] == process){
-        if(process == 0)
-          table->timeStamp[i] = FILEONELINE;
-        else
-          table->timeStamp[i] = FILETWOLINE;
-        state = 1;
-        break;
-      }
-    }
-  }
+  if(ALLC == 'f')
+    state = handleFreeForAll(table,size,pageNum,process);
+  else
+    state = handleSplit(table,size,pageNum,process);
   return state;
 }
 
 //function that find the least recently used spot in the table.
 //return line # of LRU
-int getLRUspot(pageTable *table,int flag){
+int findLRUSpot(pageTable *table,int flag,int process){
   int min = INT_MAX;
   int size = getMemSize(flag);
   int spot = -1;
-  for(int i = 0; i < size; i++){
+  int start = 0;
+  int end = size;
+  if(ALLC == 's'){
+    if(process == 0)
+      end = size/2;
+    else
+      start = size/2;
+  }
+  for(int i = start; i < end; i++){
     if(table->timeStamp[i] < min){
       min = table->timeStamp[i];
       spot = i;
@@ -144,12 +194,14 @@ void processMemory(pageTable *table,int flag,char *in,int process){
   int emptySpot = -1;
   if(!checkPageNum(table,flag,in,process)){
     incrementPageFault(flag);
-    if((emptySpot = findEmptySpot(table,flag)) != -1){
+    if((emptySpot = findEmptySpot(table,flag,process)) != -1){
+      replaceLineinTable(table,emptySpot,in,process);
+    }
+    else if((emptySpot = findLRUSpot(table,flag,process)) != -1){
       replaceLineinTable(table,emptySpot,in,process);
     }
     else{
-      emptySpot = getLRUspot(table,flag);
-      replaceLineinTable(table,emptySpot,in,process);
+      puts("error. something wrong");
     }
   }
 }
