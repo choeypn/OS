@@ -10,6 +10,10 @@ int MEMSIZE3 = 128;
 int FILEONELINE = 0;
 int FILETWOLINE = 0;
 int PAGEFAULTONE = 0; 
+int PAGEFAULTTWO = 0;
+int PAGEFAULTTHREE = 0;
+
+char ALLC;
 
 typedef struct pageTable{
   int* timeStamp;
@@ -35,6 +39,8 @@ char* getAllocationMode(char in){
   return alc;
 }
 
+//get size from flag
+// 32, 64, 126
 int getMemSize(int flag){
   int size = 0;
   switch(flag){
@@ -51,6 +57,24 @@ int getMemSize(int flag){
           puts("error, invalid flag value");
   }
   return size;
+}
+
+//increment number of page fault from flag
+// 32, 64, 128
+void incrementPageFault(int flag){
+  switch(flag){
+    case 1:
+          PAGEFAULTONE++;
+          break;
+    case 2:
+          PAGEFAULTTWO++;
+          break;
+    case 3:
+          PAGEFAULTTHREE++;
+          break;
+    default:
+          puts("error, invalid flag value");
+  }
 }
 
 //function that find empty spot in given table.
@@ -114,36 +138,37 @@ void replaceLineinTable(pageTable *table,int line,char *c,int process){
     table->ASID[line] = 1; 
 }
 
+//function that check if page number exists in the table
+//update time stamp if exist, handle finding spot if not.
+void processMemory(pageTable *table,int flag,char *in,int process){
+  int emptySpot = -1;
+  if(!checkPageNum(table,flag,in,process)){
+    incrementPageFault(flag);
+    if((emptySpot = findEmptySpot(table,flag)) != -1){
+      replaceLineinTable(table,emptySpot,in,process);
+    }
+    else{
+      emptySpot = getLRUspot(table,flag);
+      replaceLineinTable(table,emptySpot,in,process);
+    }
+  }
+}
+
 
 //function that processes input file line 
 //print incoming request page number of file line
 int processLine(FILE *f1,FILE *f2,int process){
   int eof = 0;
-  int emptySpot = -1;
-  int filenum = 0;
   char address[12];
   char *in;
   if(process == 0)
     in = fgets(address,sizeof(address),f1);
-  else{
+  else
     in = fgets(address,sizeof(address),f2);
-    filenum = 1;
-  }
   if(in != NULL){
     in[5] = '\0';
-    if(!checkPageNum(invTable1,1,in,process)){
-      PAGEFAULTONE++;
-      if((emptySpot = findEmptySpot(invTable1,1)) != -1){
-        replaceLineinTable(invTable1,emptySpot,in,process);
-       // printf("replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
-      }
-      else{
-        emptySpot = getLRUspot(invTable1,1);
-        replaceLineinTable(invTable1,emptySpot,in,process);
-       // printf("LRU replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
-      }
-    }
-    if(filenum == 0)
+    processMemory(invTable1,1,in,process);
+    if(process == 0)
       FILEONELINE++;
     else
       FILETWOLINE++;   
@@ -169,11 +194,16 @@ pageTable* initializePageTable(int size){
   return invertedTable;
 }
 
+//print final stat once processing completed.
+void printFinalStat(){
+  printf("Allocation: %s \n",getAllocationMode(ALLC));
+  printf("32 frames page fault: %d \n",PAGEFAULTONE);
+}
+
 // A function whose inputs are the trace files names and the allocation 
 // strategy 's' for split or 'f' for free for all 
-void Simulate(char* fileName1, char* fileName2, char allocation) {
+void Simulate(char* fileName1, char* fileName2) {
   int state = 1;
-  char *allc = getAllocationMode(allocation);
   FILE* f1;
   FILE* f2;
   int process = 0;
@@ -189,20 +219,15 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
     invTable1 = initializePageTable(MEMSIZE1);  
     while(lineExist){
       lineExist = processLine(f1,f2,process);
-      if(track % 20 == 0){
+      if(track % 20 == 0)
         process = (process+1) % 2;
-      }
       track++;
     }
     puts("process line done");
-    printf("track : %d \n",track);
-    printf("fileONELine: %d \n",FILEONELINE);
-    printf("fileTWOLine: %d \n",FILETWOLINE);
-    printf("page fault : %d \n",PAGEFAULTONE);
+    printFinalStat();
     free(invTable1);
     fclose(f1);
     fclose(f2);
-    printf("%s \n",allc);
   }
 }
 
@@ -213,7 +238,7 @@ int main(int argc, char** argv) {
   }
   char *firstFile = argv[1];
   char *secondFile = argv[2];
-  char mode = *argv[3];
-  Simulate(firstFile,secondFile,mode);  //run simulation here
+  ALLC = *argv[3];
+  Simulate(firstFile,secondFile);  //run simulation here
   exit(0);
 }
