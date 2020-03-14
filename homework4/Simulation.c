@@ -3,24 +3,38 @@
 #include <string.h>
 #include <limits.h>
 //#include "simulation.h"
-  
-//a structure for pagetable
-typedef struct pageTable{
-  int* timeStamp;
-  char** pageNumber;
-  int* ASID;
-}pageTable;
-
+ 
 int MEMSIZE1 = 32;
 int MEMSIZE2 = 64;
 int MEMSIZE3 = 128;
 int FILEONELINE = 1;
 int FILETWOLINE = 1;
-int PAGEFAULTONE = 0;
+int PAGEFAULTONE = 0; 
+//a structure for pagetable
+typedef struct pageTable{
+  int timeStamp[32];
+  char pageNumber[32][6];
+  int ASID[32];
+}pageTable;
+
+//a structure for pagetable
+typedef struct pageTableTwo{
+  int timeStamp[64];
+  char pageNumber[64][6];
+  int ASID[64];
+}pageTableTwo;
+
+//a structure for pagetable
+typedef struct pageTableThree{
+  int timeStamp[128];
+  char pageNumber[128][6];
+  int ASID[128];
+}pageTableThree;
+
 
 pageTable *invTable1;
-pageTable *invTable2;
-pageTable *invTable3; 
+pageTableTwo *invTable2;
+pageTableThree *invTable3; 
 
 
 //get input arg for allocation
@@ -76,11 +90,13 @@ int checkPageNum(pageTable *table,int flag,char *pageNum){
   int size = getMemSize(flag);
   for(int i = 0; i < size; i++){
     if(strcoll(table->pageNumber[i],pageNum) == 0){
+      puts("matched");
       table->timeStamp[i] = FILEONELINE;
       state = 1;
       break;
-    } else{  
-      PAGEFAULTONE++;
+    } else if(strcoll(table->pageNumber[i],"-1") == 0){
+      puts("emptyspot found");
+      break; 
     }
   }
   return state;
@@ -103,7 +119,7 @@ int getLRUspot(pageTable *table,int flag){
 //new datas
 void replaceLineinTable(pageTable *table,int line,char *c,int flag){
   table->timeStamp[line] = FILEONELINE;
-  table->pageNumber[line] = c;
+  strcpy(table->pageNumber[line],c);
   if(flag == 1)
     table->ASID[line] = 1;
   else
@@ -117,7 +133,7 @@ int processLine(FILE *f1,FILE *f2,int process){
   int eof = 0;
   int emptySpot = -1;
   int filenum = 0;
-  char address[6];
+  char address[12];
   char *c;
   if(process == 0)
     c = fgets(address,sizeof(address),f1);
@@ -125,14 +141,20 @@ int processLine(FILE *f1,FILE *f2,int process){
     c = fgets(address,sizeof(address),f2);
     filenum = 1;
   }
+  c[5] = '\0';
+  printf("%s \n",c);
+  //printf("pagenumber 0: %s \n",invTable1->pageNumber[0]);
   if(c != NULL){
     if(!checkPageNum(invTable1,1,c)){
+      PAGEFAULTONE++;
       if((emptySpot = findEmptySpot(invTable1,1)) != -1){
         replaceLineinTable(invTable1,emptySpot,c,1);
+        printf("replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
       }
       else{
         emptySpot = getLRUspot(invTable1,1);
         replaceLineinTable(invTable1,emptySpot,c,1);
+        printf("LRU replace line %d : %s\n",emptySpot,invTable1->pageNumber[emptySpot]);
       }
     }
     if(filenum == 0)
@@ -148,12 +170,9 @@ int processLine(FILE *f1,FILE *f2,int process){
 //and initialize every entry with -1 as empty.
 pageTable* initializePageTable(int size){
   pageTable* invertedTable = malloc(sizeof(pageTable));
-  invertedTable->timeStamp = malloc(sizeof(int)*size);
-  invertedTable->pageNumber = malloc(size*(sizeof(char)*6));
-  invertedTable->ASID = malloc(sizeof(int)*size);
   for(int i = 0; i < size; i++){
     invertedTable->timeStamp[i] = -1;
-    invertedTable->pageNumber[i] = "-1";
+    invertedTable->pageNumber[i][0] = '-';
     invertedTable->ASID[i] = -1;
   }
   return invertedTable;
@@ -179,8 +198,10 @@ void Simulate(char* fileName1, char* fileName2, char allocation) {
     invTable1 = initializePageTable(MEMSIZE1);  
     while(lineExist){
       lineExist = processLine(f1,f2,process);
-      if(track % 20 == 0)
+      if(track % 20 == 0){
         process = (process+1) % 2;
+        break;
+      }
       track++;
     }
     puts("process line done");
