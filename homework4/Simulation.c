@@ -1,8 +1,9 @@
+//Nat Choeypant
+//CSCI 447 HW#4
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-//#include "simulation.h"
  
 int MEMSIZE1 = 32;
 int MEMSIZE2 = 64;
@@ -15,6 +16,7 @@ int PAGEFAULTTHREE = 0;
 
 char ALLC;
 
+//a structure for a page table
 typedef struct pageTable{
   int* timeStamp;
   char** pageNumber;
