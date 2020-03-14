@@ -220,6 +220,8 @@ int processLine(FILE *f1,FILE *f2,int process){
   if(in != NULL){
     in[5] = '\0';
     processMemory(invTable1,1,in,process);
+    processMemory(invTable2,2,in,process);
+    processMemory(invTable3,3,in,process);
     if(process == 0)
       FILEONELINE++;
     else
@@ -248,8 +250,13 @@ pageTable* initializePageTable(int size){
 
 //print final stat once processing completed.
 void printFinalStat(){
-  printf("Allocation: %s \n",getAllocationMode(ALLC));
-  printf("32 frames page fault: %d \n",PAGEFAULTONE);
+
+  puts("=============================");
+  printf("           Allocation: %s \n",getAllocationMode(ALLC));
+  printf(" 32 frames page fault: %d \n",PAGEFAULTONE);
+  printf(" 64 frames page fault: %d \n",PAGEFAULTTWO);
+  printf("128 frames page fault: %d \n",PAGEFAULTTHREE);
+  puts("=============================");
 }
 
 // A function whose inputs are the trace files names and the allocation 
@@ -268,7 +275,9 @@ void Simulate(char* fileName1, char* fileName2) {
     state = 0;
   }
   if(state){
-    invTable1 = initializePageTable(MEMSIZE1);  
+    invTable1 = initializePageTable(MEMSIZE1); 
+    invTable2 = initializePageTable(MEMSIZE2);
+    invTable3 = initializePageTable(MEMSIZE3); 
     while(lineExist){
       lineExist = processLine(f1,f2,process);
       if(track % 20 == 0)
@@ -278,6 +287,8 @@ void Simulate(char* fileName1, char* fileName2) {
     puts("process line done");
     printFinalStat();
     free(invTable1);
+    free(invTable2);
+    free(invTable3);
     fclose(f1);
     fclose(f2);
   }
