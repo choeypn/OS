@@ -1,0 +1,31 @@
+Nat Choeypant
+CSCI 447 HW#4
+
+Conclusion:
+  After running the simulation, it seems that increasing number of frames help reducing
+the number of page fault. The difference between free and split allocations seem to be 
+fairly small, but as number of frames increase, split allocation is a better choice. 
+
+After examing the data from the simulation, the best solution is
+Split Allocation with 128 frames with the least amount of page fault at 80820.
+
+Script started on 2020-03-14 16:02:38-0700
+choeypn@linux-01:~/CS447/csci447_w20/homework4$ ./Simulation trace1.txt trace2.txt f
+process line done
+=============================
+           Allocation: Free 
+ 32 frames page fault: 267573 
+ 64 frames page fault: 134182 
+128 frames page fault: 81843 
+=============================
+choeypn@linux-01:~/CS447/csci447_w20/homework4$ ./Simulation trace1.txt trace2.txt s
+process line done
+=============================
+           Allocation: Split 
+ 32 frames page fault: 289638 
+ 64 frames page fault: 132906 
+128 frames page fault: 80820 
+=============================
+choeypn@linux-01:~/CS447/csci447_w20/homework4$ exit
+exit
+Script done on 2020-03-14 16:03:07-0700
